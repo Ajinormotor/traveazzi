@@ -51,7 +51,7 @@ const handleSearch = () => {
 
 
 const handleAvailability = () => {
- route.push(`/scheduleResult`);
+ route.push(`/startRide`);
 }
 
   return (

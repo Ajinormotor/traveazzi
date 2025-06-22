@@ -6,8 +6,7 @@ const OfferRideLayout = () => {
   return (
 <Stack  screenOptions={{ headerShown: false}}>
 <Stack.Screen name='index'  />
-<Stack.Screen name='add-vehicle'  />
-<Stack.Screen name='create'  />
+
 
 </Stack>
   )

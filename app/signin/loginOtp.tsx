@@ -10,6 +10,8 @@ import {
   import className from 'twrnc';
   import Ionicons from '@expo/vector-icons/Ionicons';
   import { useRouter } from 'expo-router';
+import { useAuthStore } from '@/store/authStore';
+import Toast from 'react-native-toast-message';
   
   const LoginOtp = () => {
     const route = useRouter();
@@ -19,16 +21,18 @@ import {
   
     // Refs to control input focus
     const inputs = useRef<Array<TextInput | null>>([]);
+
+    const { userEmail } = useAuthStore()
   
-    useEffect(() => {
-      if (timer <= 0) return;
+    // useEffect(() => {
+    //   if (timer <= 0) return;
   
-      const countdown = setInterval(() => {
-        setTimer((prev) => prev - 1);
-      }, 1000);
+    //   const countdown = setInterval(() => {
+    //     setTimer((prev) => prev - 1);
+    //   }, 1000);
   
-      return () => clearInterval(countdown);
-    }, [timer]);
+    //   return () => clearInterval(countdown);
+    // }, [timer]);
   
     const handleChange = (text: string, index: number) => {
       if (/^\d$/.test(text)) {
@@ -45,9 +49,25 @@ import {
         setOtp(newOtp);
       }
     };
+
+    const {registerMailOtp} = useAuthStore()
+
+    const handleSubmit = async() => {
+
+        //  route.push('/(auth)/signup')
+ const {success , message} = await registerMailOtp(otp.join(''), userEmail  ?? undefined)
+
+ if (success) {
+  console.log("Navigating to /signup");
+  Toast.show({ type: 'success', text1: message || 'Email verified' });
+  // route.push('/(auth)/signup');
+}
+ route.push('/(auth)/signup');
+
+    }
   
     return (
-      <View style={className`flex-1 p-2`}>
+      <View style={className`flex-1 p-2 bg-white`}>
         <View style={className`flex flex-col gap-7 pt-8`}>
           {/* Header */}
           <View style={className`flex flex-col gap-3`}>
@@ -61,10 +81,10 @@ import {
           <View style={className`flex flex-col gap-4`}>
             <View style={className`flex flex-col`}>
               <Text style={className`text-[16px] font-bold`}>
-                Enter the 6-digit code sent to you at +234 905-781-2982
+                Enter the 6-digit code sent to you at {userEmail}
               </Text>
               <Text style={className`text-[#AAAAAA] text-[12px]`}>
-                A confirmation code was sent to the above listed Phone Number.
+                A confirmation code was sent to the above listed email.
               </Text>
             </View>
   
@@ -115,7 +135,7 @@ import {
   
             {/* Continue Button */}
             <TouchableOpacity
-              onPress={() => route.push('/Home')}
+              onPress={handleSubmit }
               style={className`w-full h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px]`}
             >
               <Text style={className`text-white text-[16px]`}>Continue</Text>
