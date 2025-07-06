@@ -9,6 +9,7 @@ import { useRouter } from "expo-router";
 const Base_Url = "https://traveazi.onrender.com/api";
 axios.defaults.withCredentials = true;
 
+
 interface AuthStore {
   userEmail: string | null;
   loading: boolean;

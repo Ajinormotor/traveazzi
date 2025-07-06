@@ -30,7 +30,7 @@ const handleSubmit = async() => {
   if(success){
   setEmail('')
   setPassword('')
-    router.push("/home")
+    router.push("/(driver)")
 }
 
 }
@@ -111,16 +111,18 @@ const handleSubmit = async() => {
 
 
 {/* No account */}
-<View style={className`flex flex-row `}>
-<Text style={className`text-[14px] font-medium gap-1 flex flex-row`}> 
- Dont have an account?  </Text>
-
-<TouchableOpacity onPress={() => router.push('/index')}
->
-  <Text style={className`text-[#007BFF] text-[14px] `}>Sign up </Text>
-
-</TouchableOpacity>
+<View style={className`flex flex-row`}>
+  <Text style={className`text-[14px] font-medium`}>
+    Don't have an account?{' '}
+    <Text
+      style={className`text-[#007BFF]`}
+      onPress={() => router.push('/index')}
+    >
+      Sign up
+    </Text>
+  </Text>
 </View>
+
       
         </View>
 

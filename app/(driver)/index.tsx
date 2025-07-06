@@ -8,7 +8,7 @@ import down from "../../assets/images/down.png"
 import { riderlist, riderListData } from '@/constants/data/riderList'
 import indicator from "../../assets/images/indicator.png"
 import cancel from "../../assets/images/cancel.png"
-import { useRouter } from 'expo-router'
+import { Link, useRouter } from 'expo-router'
 
 const historyTitle= [
   {title: 'Completed'},
@@ -26,6 +26,11 @@ const [title, setTitle] = useState('Completed')
 const handleTitle = (title : string) => {
   setTitle(title)
 
+}
+const [showMenu, setShowMenu] = useState(false)
+
+const handleToggle = () => {
+  setShowMenu(!showMenu)
 }
 
   return (
@@ -57,11 +62,28 @@ style={className`h-[85%] bg-[#FAFAFA] flex-col flex rounded-t-[30px]  gap-7 p-1`
 
 
      <View style={className`flex flex-row items-center justify-between`}>
-    <View style={className`flex flex-row items-center gap-2 `}>
+    <View style={className`flex flex-row items-center gap-2  relative`}>
         <Text style={className`text-black text-2xl font-bold`}>Trip History</Text>
 
+<TouchableOpacity onPress={handleToggle}>
           <Image source={down} alt=''
         style={className`w-[12px] h-[7px]`}  />
+</TouchableOpacity>
+
+{showMenu && (
+  <View style={className`
+    absolute top-10 left-0 bg-white rounded-[8px] shadow-sm p-2
+    items-center justify-center flex-col w-full z-10
+    ${showMenu ? 'flex' : 'hidden'}
+  `}>
+    <TouchableOpacity>
+      <Link href="/addVehicle">
+      <Text>Vehicle</Text>
+       </Link>
+    </TouchableOpacity>
+  </View>
+)}
+
     </View>
 
     
@@ -130,9 +152,9 @@ style={className`flex flex-col gap-3 `}
    <Text style={className`text-[12px] font-bold text-[#8C8C8C]`}>{location.date}</Text>
       </View>
 
-      <View style={className`max-w-[40%] w-full bg-[#ECECEC] h-[2px]`}></View>
+    <View style={className`flex-1 h-[2px] bg-[#ECECEC]`} />
 
-      <Text style={className`text-[#008000] text-sm font-semibold `}> NGN{location.price} </Text>
+      <Text style={className`text-[#008000] text-sm font-semibold  `}> NGN{location.price} </Text>
 
       </View>
 
@@ -163,13 +185,13 @@ style={className`flex flex-col gap-3 `}
 
             <TouchableOpacity
           onPress={() => route.push('/create')}
-            style={className`w-[361px] h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px]  `}>
+            style={className`w-full h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px]  `}>
                 <Text style={className`text-white text-[16px]`}>Offer a Ride</Text>
             </TouchableOpacity>
 
                <TouchableOpacity
                 onPress={() => route.push('/(schedule)')}
-            style={className`w-[361px] h-[46px] border-[1px] border-[#245AB0] flex items-center justify-center
+            style={className`w-full h-[46px] border-[1px] border-[#245AB0] flex items-center justify-center
              rounded-[6px]  bg-white  `}>
                 <Text style={className`text-[#245AB0] text-[16px]`}>Schedule a Ride</Text>
             </TouchableOpacity>

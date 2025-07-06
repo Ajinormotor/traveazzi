@@ -1,4 +1,4 @@
-import { Dimensions, FlatList, Image, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, 
+import { ActivityIndicator, Dimensions, FlatList, Image, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, 
   TouchableOpacity, useWindowDimensions, View } from 'react-native'
 import React, { useState } from 'react'
 import className from 'twrnc'
@@ -15,6 +15,10 @@ import marker from "../../assets/images/marker.png"
 import priceTag from "../../assets/images/price_tag.png"
 // 
 import { Link, useRouter } from 'expo-router'
+import { useDriverRide } from '@/store/driverRide'
+import { create } from 'zustand'
+import Toast from 'react-native-toast-message'
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 
@@ -23,14 +27,25 @@ const seatData = [
     {id: "3", value: "3"},   {id: "4", value: "4"},   {id: "5", value: "5"},
 ]
 
+const vehicelFeature = [
+{title: 'Air Conditioning'},
+ {title: 'Wifi HotSpot'},
+  {title: 'Music System'},
+ {title: 'Airconditioning'},
+   {title: 'Extra Lounge '},
+ {title: 'Pet friendly'},
+]
 
 const width = Dimensions.get('window').width;
 
 const CreateRide = () => {
 
 const [selectedDate, setSelectedDate] = useState('');
-const [selectedTime, setSelectedTime] = useState('');
-const [price, setPrice] = useState('');
+const [pricePerSeat, setPricePerSeat] = useState('');
+const [originAddress , setOriginAddress] = useState('')
+const [ departureTime, setDepartureTime] = useState('')
+const [destinationAddress, setDestinationAddress] = useState('')
+const [preferences, setPreferences] = useState('')
 
 
 
@@ -42,17 +57,82 @@ const [price, setPrice] = useState('');
   };
 
   
+    const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  
+    const handleFeatureToggle = (title: string) => {
+    setSelectedFeatures((prev) =>
+      prev.includes(title)
+        ? prev.filter((item) => item !== title)
+        : [...prev, title]
+    );
+  };
+  
+
+  
 const route = useRouter()
-const [destination, setDestination] = useState('');
+
 
 const handleSearch = () => { 
    //
 };
 
+const { createRide, loading } =  useDriverRide()
 
-const handleAvailability = () => {
- route.push(`/startRide`);
-}
+
+const handleAvailability = async () => {
+  if (!originAddress || !destinationAddress || !selectedDate || !departureTime || !pricePerSeat) {
+    Toast.show({
+      type: "error",
+      text1: "All fields are required",
+    });
+    return;
+  }
+
+  const payload = {
+    vehicleId: "605c72ef4e79a3a3e8f2d3b4", // static from Swagger
+    origin: {
+      lat: 6.5244,
+      lon: 3.3792,
+    },
+    destination: {
+      lat: 6.5244,
+      lon: 3.3792,
+    },
+    originAddress,
+    destinationAddress,
+    departureTime: new Date(`${selectedDate} ${departureTime}`).toISOString(), // ISO format
+    pricePerSeat: Number(pricePerSeat),
+    preferences: ["No Smoking", "Music allowed"], // static
+  };
+
+  try {
+    await createRide(payload);
+
+    Toast.show({
+      type: "success",
+      text1: "Ride created successfully",
+    });
+
+    // Reset form after success
+    setPricePerSeat('');
+    setDepartureTime('');
+    setDestinationAddress('');
+    setOriginAddress('');
+    setSelectedDate('');
+    setSelectedSeat(null);
+
+    route.push(`/startRide`);
+  } catch (error) {
+    Toast.show({
+      type: "error",
+      text1: "Something went wrong",
+    });
+  }
+};
+
+
+const insets = useSafeAreaInsets();
+
 
   return (
 
@@ -85,7 +165,8 @@ const handleAvailability = () => {
 
 
 
-<ScrollView  style={className`flex flex-col gap-4 `}>
+<ScrollView 
+ style={className`flex flex-col gap-4 `}>
 
 <View  style={className` flex flex-col gap-4`}>
 
@@ -107,22 +188,25 @@ const handleAvailability = () => {
 
      <View style={className`flex flex-col gap-3`}>
 
-     <TouchableOpacity style={className`w-[361px] w-full h-[46px] bg-[#F6F6F6] rounded-[8px] w-full flex flex-row items-center 
+     <TouchableOpacity style={className` w-full h-[46px] bg-[#F6F6F6] rounded-[8px] w-full flex flex-row items-center 
        px-2 gap-3 `}>
         <Image source={gps}  style={className``}  />
-        <TextInput  placeholder='Pick up address'  style={className`max-w-[85%] w-full bg-transparent text-[16px]`}  />
+        <TextInput  placeholder='Pick up address'  style={className`max-w-[85%]
+           w-full bg-transparent text-[16px]`} 
+            value={originAddress}
+        onChangeText={setOriginAddress} />
      
      </TouchableOpacity>
 
         <TouchableOpacity  onPress={() =>  route.push(`/searchResult`)}
-        style={className`w-[361px] w-full h-[46px] bg-[#F6F6F6] rounded-[8px] w-full flex flex-row items-center 
+        style={className` w-full h-[46px] bg-[#F6F6F6] rounded-[8px] w-full flex flex-row items-center 
        px-2  gap-3`}>
         <Ionicons name='search' color="black" size={20} style={className``}  />
-        <TextInput  placeholder='Dropoff address'  
-        value={destination}
-        onChangeText={setDestination}
+        <TextInput  placeholder='Drop off address'  
+        value={destinationAddress}
+        onChangeText={setDestinationAddress}
         onSubmitEditing={handleSearch}
-        style={className`max-w-[82%] w-full bg-transparent text-[16px]`}  />
+        style={className`max-w-[80%] w-full bg-transparent text-[16px]`}  />
         <Image source={dropIcon}  style={className``}  />
         
      </TouchableOpacity>
@@ -201,8 +285,8 @@ const handleAvailability = () => {
       <TextInput
         style={className`flex-1 ml-2`}
         placeholder="09:51 AM"
-        value={selectedTime}
-        onChangeText={setSelectedTime}
+        value={departureTime}
+        onChangeText={setDepartureTime}
       />
     </View>
   </View>
@@ -230,8 +314,8 @@ const handleAvailability = () => {
       <TextInput
         style={className`flex-1 ml-2 `}
         placeholder="Enter price"
-        value={price}
-        onChangeText={setPrice}
+        value={pricePerSeat}
+        onChangeText={setPricePerSeat}
       />
     </View>
 
@@ -240,11 +324,58 @@ const handleAvailability = () => {
   </View>
 
 
+{/* vehcle feature */}
+
+    <View style={className`flex flex-col gap-3 py-3`}>
+
+     <View style={className`flex flex-col gap-[1px]`}>
+        <Text style={className`text-2xl  font-bold`}>Ride Preference</Text>
+        <Text style={className`text-[14px] text-[#AAAAAA] font-bold`}>
+   Set the amount you want to charge passengers for each available seat. </Text>
+      </View>
+
+    <View style={className`flex flex-wrap flex-row justify-between gap-y-3`}>
+  {vehicelFeature.map((vehic, index) => {
+    const isSelected = selectedFeatures.includes(vehic.title);
+    return (
+      <TouchableOpacity
+        key={index}
+        onPress={() => handleFeatureToggle(vehic.title)}
+        style={className`w-[48%] flex-row items-center gap-2`}
+      >
+        {/* Custom Rounded Checkbox */}
+        <View
+          style={[
+            className`w-5 h-5 rounded-full border-[2px] border-[#ccc] items-center justify-center`,
+            {
+              backgroundColor: isSelected ? '#245AB0' : 'white',
+              borderColor: isSelected ? '#245AB0' : '#ccc',
+            },
+          ]}
+        >
+          {isSelected && (
+            <View style={className`w-2 h-2 rounded-full bg-white`} />
+          )}
+        </View>
+
+        <Text style={className`text-black text-base`}>{vehic.title}</Text>
+      </TouchableOpacity>
+    );
+  })}
+</View>
+
+      </View>
+
   {/* Button */}
   <View style={className`w-full flex items-center justify-center`}>
     <TouchableOpacity onPress={handleAvailability}
       style={className`w-full h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px]`}>
+
+         {loading ?
+        <ActivityIndicator color="#fff" />
+        :
       <Text style={className`text-white text-[16px]`}>Offer Ride</Text>
+         }
     </TouchableOpacity>
   </View>
 
@@ -262,7 +393,7 @@ const handleAvailability = () => {
      </ScrollView>
 
     </View>
-    </ImageBackground>
+    </ImageBackground>Wisd
 
         </KeyboardAvoidingView>
   )

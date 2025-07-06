@@ -1,5 +1,7 @@
 import {
   Image,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -45,6 +47,10 @@ const Signup = () => {
   };
 
   return (
+    <KeyboardAvoidingView
+    style={{ flex: 1}}
+    behavior={Platform.OS === "ios" ? "padding" : "height"}>
+
     <View style={className`flex-1 p-2 bg-white`}>
       <View style={className`flex flex-col gap-4 pt-8`}>
         <View style={className`flex flex-col gap-3`}>
@@ -172,6 +178,7 @@ const Signup = () => {
         {/* google,email */}
       </View>
     </View>
+       </KeyboardAvoidingView>
   );
 };
 

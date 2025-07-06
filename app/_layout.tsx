@@ -18,9 +18,10 @@ export default function RootLayout (){
     useEffect(() => {
         const inAuthScreen = segments[0] === "(auth)";
         const isSignedIn = user && token
+        console.log('Token ', token)
 
-        // if(!inAuthScreen && !isSignedIn) return router.replace('/(auth)')
-             if(isSignedIn && inAuthScreen) return router.replace("/(home)")
+        if(!inAuthScreen && !isSignedIn) return router.replace('/(auth)')
+         if(isSignedIn && inAuthScreen) return router.replace("/(driver)")
 
     }, [user,token,segments, router])
 
@@ -30,9 +31,10 @@ export default function RootLayout (){
     <SafeScreen>
         <Stack  screenOptions={{ headerShown: false}}>
         <Stack.Screen name="index"  />
-         <Stack.Screen  name="home"  />
+           <Stack.Screen name="(auth)"  />
+            <Stack.Screen name="(home)"  />
          <Stack.Screen name="(schedule)"  />
-         <Stack.Screen name="(auth)"  />
+      
            {/* <Stack.Screen name="(offer)"  /> */}
               <Stack.Screen name="(driver)"  />
 

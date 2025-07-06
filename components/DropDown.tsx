@@ -1,14 +1,15 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
+import className from 'twrnc'
 
-const HomeIndexs = () => {
+const DropDown = () => {
   return (
-    <View>
-      <Text>s</Text>
+    <View style={className``}>
+      <Text>DropDown</Text>
     </View>
   )
 }
 
-export default HomeIndexs
+export default DropDown
 
 const styles = StyleSheet.create({})
