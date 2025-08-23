@@ -1,4 +1,6 @@
-import { Dimensions, FlatList, Image, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, 
+import { Dimensions, FlatList, Image, ImageBackground,
+   KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, 
+   ActivityIndicator,
   TouchableOpacity, useWindowDimensions, View } from 'react-native'
 import React, { useState } from 'react'
 import className from 'twrnc'
@@ -14,6 +16,8 @@ import bg from "../../assets/images/map_bg.png"
 import marker from "../../assets/images/marker.png"
 // 
 import { useRouter } from 'expo-router';
+import { useDriverRideStore, VehiclePayload } from '@/store/driverStore'
+import Toast from 'react-native-toast-message'
 
 
 
@@ -35,22 +39,25 @@ const vehicelFeature = [
 const AddVehicle = () => {
   
     const width = Dimensions.get('window').width;
-    const route = useRouter()
+    const router = useRouter()
 
 
 const [carModel, setCarModel] = useState('');
 const [carMake, setCarMake] = useState('');
 const [carYear, setCarYear] = useState('');
+const [seatsAvailable, setSeatAvailable] = useState<number | null>(null);
 const [carColor, setCarColor] = useState('');
 const [plateNumber, setPlateNumber] = useState('');
+const [ features, setFeatures] = useState('')
 
 
-const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
   // const router = useRouter()
 
-  const handleSelected = (id: string) => {
-    setSelectedSeat(prev => (prev === id ? null : id)); 
-  };
+ const handleSelected = (id: string) => {
+  const numericId = parseInt(id, 10);
+  setSeatAvailable(prev => (prev === numericId ? null : numericId));
+};
+
 
 
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
@@ -63,13 +70,60 @@ const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
   );
 };
 
+const { loading,addVehicle} = useDriverRideStore()
+
+const handleAddVehicle = async () => {
+  if (!carMake || !carModel || !carColor || !plateNumber || 
+    !selectedFeatures.length || !seatsAvailable) {
+    Toast.show({
+      type: "error",
+      text1: "All fields are required",
+    });
+    return;
+  }
+
+  console.log('year:', carYear)
+
+  const payload: VehiclePayload = {
+    make: carMake,
+    model: carModel,
+    year: parseInt(carYear, 10),
+    color: carColor,
+    plateNumber,
+    seatsAvailable,
+    features: selectedFeatures,
+  };
+
+  try {
+    await addVehicle(payload);
+    // Clear all form fields
+    setCarModel('');
+    setCarMake('');
+    setCarYear('');
+    setCarColor('');
+    setPlateNumber('');
+    setSeatAvailable(null);
+    setSelectedFeatures([]);
+      Toast.show({
+            type: "success",
+            text1: "Vehicle created",
+          });
+    router.push('/(driver)/vehicle')
+  } catch (error) {
+    Toast.show({
+      type: "error",
+      text1: "Something went wrong",
+    });
+  }
+};
+
+
 
  return (
 
     <KeyboardAvoidingView style={{flex:1}}
    behavior = {Platform.OS === "ios" ? "padding" : "height"}
     >
-
 
 
      <ImageBackground
@@ -103,7 +157,7 @@ const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
 {/* Headint txt */}
      <View style={className`flex flex-row items-center  gap-3`}>
 
-            <TouchableOpacity onPress={() => route.back()}>
+            <TouchableOpacity onPress={() => router.back()}>
       {/* <Image source={cancel} alt='' style={className`w-[20px] h-[20px]`   }  /> */}
          <Ionicons name="arrow-back-outline" size={20} color="black" />
     </TouchableOpacity>
@@ -232,11 +286,11 @@ const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
         renderItem={ ({item}) => (
           <TouchableOpacity onPress={() => handleSelected(item.id)}
            style={[className`flex flex-row w-[36px] h-[36px] rounded-full items-center justify-center `, {
-            backgroundColor: selectedSeat === item.id ? "black" : "#F0F0F0",
-            color: selectedSeat ? "white" : "black"
+        backgroundColor: seatsAvailable === parseInt(item.id) ? "black" : "#F0F0F0",
+            color: seatsAvailable? "white" : "black"
           }]}>
           <Text style={[className`text-center font-bold text-lg`, 
-           { color: selectedSeat === item.id ? "white" : "black" }]}>{item.value}</Text>
+           { color: parseInt(item.id) ? "white" : "black" }]}>{item.value}</Text>
         </TouchableOpacity>
   )}
 
@@ -294,9 +348,14 @@ const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
               <View style={className`flex flex-col gap-3`}>
 
             <TouchableOpacity
-          onPress={() => route.push('/(offer)')}
-            style={className`w-[361px] h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px]  `}>
+          onPress={handleAddVehicle}
+            style={className`w-full h-[46px] bg-[#245AB0] flex
+             items-center justify-center rounded-[6px]  `}>
+                {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
                 <Text style={className`text-white text-[16px]`}>Add Vehicle</Text>
+            )}
             </TouchableOpacity>
 
             </View>

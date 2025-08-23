@@ -4,23 +4,28 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { Stack } from 'expo-router'
 import SafeScreen from '@/components/SafeScreen'
 
-const _layout = () => {
+
+const DriverLayout = () => {
   return (
 <SafeAreaProvider>
 
 <SafeScreen>
     <Stack screenOptions={{ headerShown: false}} >
         <Stack.Screen name='index' />
+             <Stack.Screen name='vehicle'  />
      <Stack.Screen name='addVehicle'  />
      <Stack.Screen name='create'  />
-          <Stack.Screen name='manageRide'  />
+          <Stack.Screen name='[id]/startRide'  />
+              <Stack.Screen name='manageRide/[id]'  />
           <Stack.Screen name='destination'  />
     </Stack>
+
+            {/* <Slot/> */}
     </SafeScreen>
 </SafeAreaProvider>
   )
 }
 
-export default _layout
+export default DriverLayout
 
 const styles = StyleSheet.create({})

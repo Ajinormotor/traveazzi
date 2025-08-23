@@ -116,7 +116,7 @@ const handleSubmit = async() => {
     Don't have an account?{' '}
     <Text
       style={className`text-[#007BFF]`}
-      onPress={() => router.push('/index')}
+      onPress={() => router.push('/')}
     >
       Sign up
     </Text>

@@ -6,9 +6,12 @@ import cancel from "../assets/images/cancel.png"
 import indicator from "../assets/images/indicator.png"
 import Ionicons from '@expo/vector-icons/Ionicons'
 import gps from "../assets/images/location-04.png"
+import down from "../assets/images/down.png"
 import driver from "../assets/images/location.png"
 import { searchData } from '@/constants/data/search'
 import { Link, useRouter } from 'expo-router'
+import { useAuthStore } from '@/store/authStore'
+import { useDriverRideStore } from '@/store/driverStore'
 
 
 const seatData = [
@@ -31,9 +34,25 @@ const [destination, setDestination] = useState('');
 
 const handleSearch = () => { 
 
-    route.push(`/searchResult`);
+    route.push(`/(passenger)/rides`);
   
 };
+
+const [showMenu, setShowMenu] = useState(false)
+
+const handleToggle = () => {
+  setShowMenu(!showMenu)
+}
+
+const {logout} = useAuthStore()
+const {rides, getAllRides} = useDriverRideStore()
+
+const handleLogout = async() => {
+  await logout()
+  setShowMenu(!showMenu)
+  route.push('/(auth)')
+
+}
 
 
   return (
@@ -54,7 +73,39 @@ const handleSearch = () => {
      <View style={className`flex flex-row items-start justify-between`}>
 
       <View style={className`flex flex-col gap-[1px]`}>
-        <Text style={className`text-2xl  font-bold`}>Where are you headed?</Text>
+        {/* <Text style={className`text-2xl  font-bold`}>Where are you headed?</Text> */}
+            <View style={className`flex flex-row items-center gap-2  relative`}>
+                <Text style={className`text-black text-2xl font-bold`}>Where you headed to?</Text>
+        
+        <TouchableOpacity onPress={handleToggle}>
+                  <Image source={down} alt=''
+                style={className`w-[12px] h-[7px]`}  />
+        </TouchableOpacity>
+        
+        {showMenu && (
+          <View style={className`
+            absolute top-10 left-0 bg-white rounded-[8px] shadow-sm p-2 gap-3 
+            items-center justify-center flex-col w-full z-10
+            ${showMenu ? 'flex' : 'hidden'}
+          `}>
+            <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
+              <Link href="/vehicle"
+              style={className`border-b-1 border-gray-200`}>
+              <Text>Vehicle</Text>
+               </Link>
+            </TouchableOpacity>
+        
+               <TouchableOpacity onPress={handleLogout}>
+            
+              <Text style={className`text-red-500 font-bold hover:text-red-300`}>
+                Logout
+                </Text>
+              
+            </TouchableOpacity>
+          </View>
+        )}
+        
+            </View>
         <Text style={className`text-[14px] text-[#AAAAAA] font-bold`}>Type a city, landmark, or Address...</Text>
       </View>
 
@@ -75,7 +126,7 @@ const handleSearch = () => {
      
      </TouchableOpacity>
 
-        <TouchableOpacity  onPress={() =>  route.push(`/searchResult`)}
+        <TouchableOpacity  onPress={() =>  route.push(`/(passenger)/rides`)}
         style={className`w-[361px] w-full h-[46px] bg-[#F6F6F6] rounded-[8px] w-full flex flex-row items-center 
        px-2  gap-3`}>
         <Ionicons name='search' color="black" size={20} style={className``}  />

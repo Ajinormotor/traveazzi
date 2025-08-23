@@ -1,6 +1,6 @@
 import { Image, ImageBackground, ScrollView, StyleSheet,
      Text, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import bg from "../../assets/images/map_bg.png"
 import className, { style } from 'twrnc'
 import marker from "../../assets/images/marker.png"
@@ -8,11 +8,20 @@ import down from "../../assets/images/down.png"
 import { riderlist, riderListData } from '@/constants/data/riderList'
 import indicator from "../../assets/images/indicator.png"
 import cancel from "../../assets/images/cancel.png"
-import { Link, useRouter } from 'expo-router'
+import { Link, router, useRouter } from 'expo-router'
+import { useAuthStore } from '@/store/authStore'
+import { useDriverRideStore } from '@/store/driverStore'
+
+import up from "../../assets/images/up.png"
+import downs from "../../assets/images/down_arrow.png"
+import arrow from "../../assets/images/arrow-right.png"
+
+import dayjs from 'dayjs';
+
 
 const historyTitle= [
-  {title: 'Completed'},
    {title: 'Upcoming'},
+  {title: 'Completed'},
    {title: 'Pending'},
     {title: 'Cancelled'},
 ]
@@ -21,7 +30,7 @@ const historyTitle= [
 const DriverIndex = () => {
 
   const route = useRouter()
-const [title, setTitle] = useState('Completed')
+const [title, setTitle] = useState('Upcoming')
 
 const handleTitle = (title : string) => {
   setTitle(title)
@@ -32,6 +41,23 @@ const [showMenu, setShowMenu] = useState(false)
 const handleToggle = () => {
   setShowMenu(!showMenu)
 }
+
+const {logout} = useAuthStore()
+const {rides, getAllRides} = useDriverRideStore()
+
+const handleLogout = async() => {
+  await logout()
+  setShowMenu(!showMenu)
+  route.push('/(auth)')
+
+}
+
+useEffect(() => {
+  getAllRides()
+},[])
+
+// console.log('All Rides one:', rides)
+
 
   return (
    <ImageBackground
@@ -62,6 +88,7 @@ style={className`h-[85%] bg-[#FAFAFA] flex-col flex rounded-t-[30px]  gap-7 p-1`
 
 
      <View style={className`flex flex-row items-center justify-between`}>
+
     <View style={className`flex flex-row items-center gap-2  relative`}>
         <Text style={className`text-black text-2xl font-bold`}>Trip History</Text>
 
@@ -72,14 +99,23 @@ style={className`h-[85%] bg-[#FAFAFA] flex-col flex rounded-t-[30px]  gap-7 p-1`
 
 {showMenu && (
   <View style={className`
-    absolute top-10 left-0 bg-white rounded-[8px] shadow-sm p-2
+    absolute top-10 left-0 bg-white rounded-[8px] shadow-sm p-2 gap-3 
     items-center justify-center flex-col w-full z-10
     ${showMenu ? 'flex' : 'hidden'}
   `}>
-    <TouchableOpacity>
-      <Link href="/addVehicle">
+    <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
+      <Link href="/vehicle"
+      style={className`border-b-1 border-gray-200`}>
       <Text>Vehicle</Text>
        </Link>
+    </TouchableOpacity>
+
+       <TouchableOpacity onPress={handleLogout}>
+    
+      <Text style={className`text-red-500 font-bold hover:text-red-300`}>
+        Logout
+        </Text>
+      
     </TouchableOpacity>
   </View>
 )}
@@ -115,72 +151,107 @@ style={className`h-[85%] bg-[#FAFAFA] flex-col flex rounded-t-[30px]  gap-7 p-1`
 
 <ScrollView
 showsVerticalScrollIndicator={false}
-style={className`flex flex-col gap-3 `}
+style={className`flex flex-col gap-3 min-h-[200px] `}
 >
   <View style={className` mt-3`} >
         
-        
-   <View style={className`flex flex-col gap-4 `}>
-  {riderListData.map((rider, index) =>
-  <View key={index} style={className`border-[1px] border-[#EBEBEB] rounded-[8px]`}>
-  {
-    rider.location_details.map((location: riderlist) => (
-      <View key={`${rider.id}-${location.id}`}
-       style={className`flex flex-col bg-white  `}>
-        <View
-          style={className`flex flex-col items-start justify-between  w-full px-3 `}
-        >
-          <View style={className`flex flex-col gap-1 py-4`}>
-            <View style={className`flex flex-row gap-1`}>
-              <Image source={location.image} alt="" style={className``} />
-              <Text style={className`text-[14px] font-bold`}>{location.first_location}</Text>
-            </View>
+{/* displaying rides */}
 
-            <Text style={className`text-[12px] font-bold text-[#434343]`}>
-              {location.first_direction}
+      {rides && rides.length > 0 ?
+      
+   <View style={className`flex flex-col gap-4 `}>
+
+    {/* displaying rides */}
+{rides.map((rider: any) => (
+  <TouchableOpacity key={rider._id}
+onPress={() => router.push(`/${rider._id}/startRide`)} >
+  <View  style={className`border-[1px] border-[#EBEBEB] rounded-[8px]`}>
+    <View style={className`flex flex-col bg-white`}>
+      <View style={className`flex flex-col items-start justify-between w-full px-3`}>
+        
+        <View style={className`flex flex-col gap-1 py-4`}>
+
+          {/* current destination */}
+
+          <View style={className`flex flex-col gap-1 pt-1`}>
+           <View style={className`flex flex-row gap-1`}>
+             <Image source={up} alt="" style={className``} />
+             <Text style={className`text-[14px] font-bold`}> 
+               {rider.originAddress} </Text>
+           </View>
+
+           {/* <Text style={className`text-[12px] font-bold text-[#434343]`}>
+            {rider.originAddress}
+            </Text> */}
+
+          </View>
+          
+
+  
+        </View>
+
+{/* divider */}
+        <View style={className`flex flex-row items-center gap-3`}>
+          <View style={className`rounded-lg flex flex-row items-center justify-center max-w-[133px]
+             h-[32px] w-full bg-[#F0F0F0] gap-1 rounded-[8px]`}>
+            <Text style={className`text-[12px] font-bold text-[#8C8C8C]`}>
+            {dayjs(rider.departureTime).format('MMM D, YYYY h:mm A')}
             </Text>
           </View>
 
-{ location.date  &&
-<View style={className`flex flex-row items-center gap-3`}>
+          <View style={className`flex-1 h-[2px] bg-[#ECECEC]`} />
 
-
- <View
-    style={className` rounded-lg flex flex-row items-center
-  justify-center max-w-[113px] h-[32px] w-full bg-[#F0F0F0]  gap-1 rounded-[8px]`}
-        >
-   <Text style={className`text-[12px] font-bold text-[#8C8C8C]`}>{location.date}</Text>
-      </View>
-
-    <View style={className`flex-1 h-[2px] bg-[#ECECEC]`} />
-
-      <Text style={className`text-[#008000] text-sm font-semibold  `}> NGN{location.price} </Text>
-
-      </View>
-
-    }
-
+          <Text style={className`text-[#008000] text-sm font-semibold`}>
+            NGN {rider.pricePerSeat}
+          </Text>
         </View>
 
-        {/* <View
-          style={className`bg-black rounded-lg flex flex-row items-center justify-center max-w-[113px] h-[32px] w-full mx-3 gap-1`}
-        >
-          <Text style={className`text-[12px] font-bold text-white`}>{location.time}</Text>
-        </View> */}
-      </View>
-    ))
+        {/* arrival destination */}
 
-  }
+            <View style={className`flex flex-col gap-1 py-4`}>
+           <View style={className`flex flex-row gap-1`}>
+             <Image source={downs} alt="" style={className``} />
+             <Text style={className`text-[14px] font-bold`}>  
+              {rider.destinationAddress}
+               </Text>
+           </View>
+
+           {/* <Text style={className`text-[12px] font-bold text-[#434343]`}>
+            {rider.originAddress}
+            </Text> */}
+
+          </View>
+
+      </View>
+      
+    </View>
+
   </View>
-  )}
+  </TouchableOpacity>
+))}
+
 </View>
 
+:
+
+  <View style={className`flex-1 items-center justify-center`}>
+       <Text style={className`text-[#AAAAAA] text-2xl font-bold`}>No vehicle please add a vehicle</Text>
+    </View>
+
+}
         
         </View>
           </ScrollView>
 
+          {Array.isArray(riderListData) && riderListData.length === 0 && (
+  <View style={className`flex-1 items-center justify-center min-h-[300px]`}>
+       <Text style={className`text-[#AAAAAA] text-2xl font-bold`}>No vehicle please add a vehicle</Text>
+    </View>
+)}
 
-{/* offer/schedule */}
+
+
+{/* offer/schedule  button*/}
           <View style={className`flex flex-col gap-3`}>
 
             <TouchableOpacity
@@ -212,3 +283,57 @@ style={className`flex flex-col gap-3 `}
 export default DriverIndex
 
 const styles = StyleSheet.create({})
+
+
+//   {rides.map((rider) =>
+//   <View key={rider._id} style={className`border-[1px] border-[#EBEBEB] rounded-[8px]`}>
+//   {
+//     rider.map((location: riderlist) => (
+//       <View key={`${rider.id}-${location.id}`}
+//        style={className`flex flex-col bg-white  `}>
+//         <View
+//           style={className`flex flex-col items-start justify-between  w-full px-3 `}
+//         >
+//           <View style={className`flex flex-col gap-1 py-4`}>
+//             <View style={className`flex flex-row gap-1`}>
+//               <Image source={location.image} alt="" style={className``} />
+//               <Text style={className`text-[14px] font-bold`}>{location.first_location}</Text>
+//             </View>
+
+//             <Text style={className`text-[12px] font-bold text-[#434343]`}>
+//               {location.first_direction}
+//             </Text>
+//           </View>
+
+// { location.date  &&
+// <View style={className`flex flex-row items-center gap-3`}>
+
+
+//  <View
+//     style={className` rounded-lg flex flex-row items-center
+//   justify-center max-w-[113px] h-[32px] w-full bg-[#F0F0F0]  gap-1 rounded-[8px]`}
+//         >
+//    <Text style={className`text-[12px] font-bold text-[#8C8C8C]`}>{location.date}</Text>
+//       </View>
+
+//     <View style={className`flex-1 h-[2px] bg-[#ECECEC]`} />
+
+//       <Text style={className`text-[#008000] text-sm font-semibold  `}> NGN{location.price} </Text>
+
+//       </View>
+
+//     }
+
+//         </View>
+
+//         {/* <View
+//           style={className`bg-black rounded-lg flex flex-row items-center justify-center max-w-[113px] h-[32px] w-full mx-3 gap-1`}
+//         >
+//           <Text style={className`text-[12px] font-bold text-white`}>{location.time}</Text>
+//         </View> */}
+//       </View>
+//     ))
+
+//   }
+//   </View>
+//   )}

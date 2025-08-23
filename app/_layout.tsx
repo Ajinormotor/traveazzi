@@ -18,10 +18,24 @@ export default function RootLayout (){
     useEffect(() => {
         const inAuthScreen = segments[0] === "(auth)";
         const isSignedIn = user && token
-        console.log('Token ', token)
+        // console.log('Root Token ', token)
+                // console.log('User', user)
+                // console.log('USer roles', user?.roles[0]?.name)
 
-        if(!inAuthScreen && !isSignedIn) return router.replace('/(auth)')
-         if(isSignedIn && inAuthScreen) return router.replace("/(driver)")
+        // if(!inAuthScreen && !isSignedIn) return router.replace('/(auth)')
+        //  if(isSignedIn && inAuthScreen) return router.replace("/(driver)")
+          if(isSignedIn && inAuthScreen) return router.replace("/(passenger)")
+
+
+            // if   (isSignedIn && inAuthScreen) {
+            // if(user && user.roles[0]?.name === 'DRIVER'  )
+            //     { return router.replace("/(driver)") 
+            //     } else {
+            // return router.replace("/(passenger)")
+            //     }
+
+            // }
+
 
     }, [user,token,segments, router])
 
@@ -32,11 +46,11 @@ export default function RootLayout (){
         <Stack  screenOptions={{ headerShown: false}}>
         <Stack.Screen name="index"  />
            <Stack.Screen name="(auth)"  />
-            <Stack.Screen name="(home)"  />
          <Stack.Screen name="(schedule)"  />
       
            {/* <Stack.Screen name="(offer)"  /> */}
               <Stack.Screen name="(driver)"  />
+                      <Stack.Screen name="(passenger)"  />
 
         </Stack>
 

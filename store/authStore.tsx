@@ -185,18 +185,17 @@ export const useAuthStore = create<AuthStore>((set) => ({
       });
 
       const data = await response.json()
-
     
       if (response.ok && data?.success) {
-        set({ loading: false });
+        set({ loading: false, token: data?.data?.token?.accessToken  });
         Toast.show({ type: "success", text1: "Logged in" });
 
-        await AsyncStorage.setItem("token", JSON.stringify(data?.data?.token));
+        await AsyncStorage.setItem("token", data?.data?.token?.accessToken);
         await AsyncStorage.setItem("user", JSON.stringify(data?.data?.user));
 
         return true;
       } else {
-        set({ user: data?.user, token: data?.token, loading: false });
+        set({ user: data?.user, token: data?.token?.accessToken, loading: false });
         Toast.show({
           type: "error",
           text1: data.message || "Login failed",
@@ -229,16 +228,23 @@ export const useAuthStore = create<AuthStore>((set) => ({
     try {
       const response = await fetch(`${Base_Url}/auth/email/send-otp`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          Authorization: `Bearer ${useAuthStore.getState().token}`,
+          "Content-Type": "application/json" },
       });
 
-      const data = response.json();
+      const data = await response.json();
 
-      if (data?.success) {
+    
         Toast.show({ type: "success", text1: data?.message });
         await AsyncStorage.removeItem("token");
         await AsyncStorage.removeItem("user");
-      }
-    } catch (error) {}
+             useAuthStore.setState({ token: null, user: null });
+      
+    } catch (error) {
+        console.log("Logout failed", error);
+           Toast.show({ type: "error", text1: data?.message });
+    }
   },
+
 }));
