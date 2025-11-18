@@ -15,29 +15,34 @@ export default function RootLayout (){
         checkAuth()
     },[checkAuth])
 
-    useEffect(() => {
-        const inAuthScreen = segments[0] === "(auth)";
-        const isSignedIn = user && token
-        // console.log('Root Token ', token)
-                // console.log('User', user)
-                // console.log('USer roles', user?.roles[0]?.name)
+useEffect(() => {
+  const inAuthScreen = segments[0] === "(auth)";
+  const isSignedIn = user && token;
+  // console.log('User details:', user)
+  // console.log('Token', token)
 
-        // if(!inAuthScreen && !isSignedIn) return router.replace('/(auth)')
-        //  if(isSignedIn && inAuthScreen) return router.replace("/(driver)")
-          if(isSignedIn && inAuthScreen) return router.replace("/(passenger)")
+  if (!isSignedIn) return; // not signed in, do nothing
 
+  if (inAuthScreen) {
+    // check user role
+    const roleName = user?.roles?.[0]?.name;
+        router.replace("/(passenger)");
 
-            // if   (isSignedIn && inAuthScreen) {
-            // if(user && user.roles[0]?.name === 'DRIVER'  )
-            //     { return router.replace("/(driver)") 
-            //     } else {
-            // return router.replace("/(passenger)")
-            //     }
+    if (roleName === "DRIVER") {
 
-            // }
+      router.replace("/(driver)");
+              // router.replace("/(passenger)");
 
+    } else if (roleName === "PASSENGER") {
+      router.replace("/(passenger)");
+    } else {
+      // fallback if role is missing or unknown
+      console.warn("Unknown user role, redirecting to default screen");
+      router.replace("/"); 
+    }
+  }
+}, [user, token, segments, router]);
 
-    }, [user,token,segments, router])
 
     return (
         <SafeAreaProvider>

@@ -3,23 +3,14 @@ import axios from "axios";
 import Toast from "react-native-toast-message";
 import { create } from "zustand";
 import { useAuthStore } from "./authStore";
+import { RidePayload } from "@/lib/interface/ride.type";
 
 
 const Base_Url = "https://traveazi.onrender.com/api";
 axios.defaults.withCredentials = true;
 
 
-interface RidePayload {
-  vehicleId: string;
-  origin: { lat: number; lon: number };
-  destination: { lat: number; lon: number };
-  originAddress: string;
-  destinationAddress: string;
-  departureTime: string;
-  availableSeats: number;
-  pricePerSeat: number;
-  preferences: string[];
-}
+
 
 export interface VehiclePayload {
   make: string,
@@ -33,9 +24,9 @@ export interface VehiclePayload {
 
 interface RideState {
   loading: boolean;
-  rides: string[];
+  rides: RidePayload[];
   vehicles: any;
-  createRide: (rideData: RidePayload) => Promise<void>;
+  createRide: (rideData: RidePayload) => Promise<any>;
   getAllRides: () => Promise<any>
   singleRides: (id: string) => Promise<any>
   startRides: (id: string) => Promise<any>
@@ -55,38 +46,36 @@ export const useDriverRideStore = create<RideState>((set) => ({
   rides: [],
   vehicles:[],
 
-  createRide: async (rideData) => {
-    set({ loading: true });
-    try {
-        const token = useAuthStore.getState().token;
-      // console.log('Create ride', token)
+createRide: async (rideData) => {
+  set({ loading: true });
+  try {
+    const token = useAuthStore.getState().token;
 
-      const response = await axios.post(`${Base_Url}/rides`, rideData, {
+    const response = await axios.post(`${Base_Url}/rides`, rideData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+    });
 
-        headers: {
-           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json" },
-      });
+    Toast.show({
+      type: "success",
+      text1: "Ride created successfully",
+    });
 
-      Toast.show({
-        type: "success",
-        text1: "Ride created successfully",
-      });
-      set({loading: false})
-
-      console.log("Ride Created:", response.data);
-      return response.data;
-    } catch (error: any) {
-      console.error("Error creating ride:", error?.response?.data || error);
-      Toast.show({
-        type: "error",
-        text1: "Failed to create ride",
-      });
-      set({ loading: false})
-    } finally {
-      set({ loading: false });
-    }
-  },
+    console.log("Ride Created:", response.data);
+    return true; 
+  } catch (error: any) {
+    console.error("Error creating ride:", error?.response?.data || error);
+    Toast.show({
+      type: "error",
+      text1: "Failed to create ride",
+    });
+    return false; 
+  } finally {
+    set({ loading: false });
+  }
+},
 
   
   getAllRides: async () => {
@@ -102,15 +91,16 @@ export const useDriverRideStore = create<RideState>((set) => ({
 
       set({ rides: response.data.data, loading: false });
 
-      console.log("Get all Rides:", response.data.data);
+      // console.log("Get all Rides:", response.data.data);
   
       return response.data.data;
     } catch (error: any) {
-      console.error("Error fetching rides:", error?.response?.data || error);
-      Toast.show({
-        type: "error",
-        text1: "Failed to fetch rides",
-      });
+      // console.error("Error fetching rides:",
+      //    error?.response?.data || error);
+      // Toast.show({
+      //   type: "error",
+      //   text1: "Failed to fetch rides",
+      // });
       set({ loading: false });
     }
   },
@@ -131,7 +121,8 @@ export const useDriverRideStore = create<RideState>((set) => ({
       // console.log("Fetched Single Rides:", response.data.data);
       return response.data.data;
     } catch (error: any) {
-      console.error("Error fetching rides:", error?.response?.data || error);
+      // console.error("Error fetching rides:",
+      //    error?.response?.data || error);
       Toast.show({
         type: "error",
         text1: "Failed to fetch rides",

@@ -33,7 +33,7 @@ const { id } = useLocalSearchParams();
 const route = useRouter();
 
 const { rides, singleRides } = useDriverRideStore();
-const { requestBookings } = usePassengerStore(); // ✅ Move this hook to the top-level
+const { requestBookings } = usePassengerStore(); 
 
 const [rideDetails, setRideDetails] = useState<any>(null);
 const [isLoading, setIsLoading] = useState(false)
@@ -51,6 +51,7 @@ useEffect(() => {
 if (!rideDetails) return <Text>Loading ride...</Text>;
 
 const item = rideDetails;
+// console.log('Ride details:', item);
 
 const handleTransit = (item: any) => {
   if (item?._id) {
@@ -63,21 +64,25 @@ const handleTransit = (item: any) => {
 
 
 const handleConfirm = async () => {
-    setIsLoading(true)
+  setIsLoading(true);
 
-  const payload = {
-    rideId: item._id,
-    seatsNeeded: item?.initialSeats ?? 1, 
-    pickupAddress: item?.destinationAddress,
-    dropoffAddress: item?.originAddress,
-  };
+  if (item?.status === 'IN_PROGRESS') {
+    setIsLoading(false)
+    route.push({
+      pathname: '/payRide/[id]',
+      params: { id: item._id }
+    });
+  } else {
+    const payload = {
+      rideId: item._id,
+      seatsNeeded: item?.initialSeats ?? 1,
+      pickupAddress: item?.destinationAddress,
+      dropoffAddress: item?.originAddress,
+    };
 
-  await requestBookings(payload as any);
-  setIsLoading(false)
-  route.push({
-    pathname: '/payRide/[id]',
-    params: { id: item._id}
-  })
+    await requestBookings(payload as any);
+    setIsLoading(false);
+  }
 };
 
 
@@ -88,7 +93,7 @@ const handleConfirm = async () => {
     style={className`flex-1 `}
     >
 
-<View style={className`h-[15%] relative `}>
+<View style={className`h-[25%] relative `}>
 
 <TouchableOpacity style={className`absolute left-[50px] bottom-[50px]`} >
 <Image source={marker}  alt='' style={className`w-[100px] h-[100px]`}   />
@@ -96,7 +101,7 @@ const handleConfirm = async () => {
 </View>
 
 <View
-style={className`h-[85%] bg-[#FAFAFA] flex-col flex rounded-t-[30px]  gap-7`}  >
+style={className`h-[75%] bg-[#FAFAFA] flex-col flex rounded-t-[30px]  gap-7`}  >
 
 
 
@@ -197,7 +202,7 @@ style={className`flex flex-col gap-3`}
 
 </View>
 
-<View style={className`flex flex-row gap-2`}>
+<View style={className`flex flex-row gap-2 hidden`}>
 <TouchableOpacity>
     <Image source={chatTwo} alt=''
     className='w-[20px] h-[20px] rounded-full'  />
@@ -319,9 +324,11 @@ style={className`flex flex-col gap-3`}
     </View>
 
     <View style={className`flex flex-row gap-1 `}>
+      
         <TouchableOpacity  onPress={() => handleConfirm()}
          style={className`bg-[#245AB0] w-[271px] h-[44px] flex items-center justify-center rounded-lg`}>
-            <Text style={className`text-white`}>Confirm Ride</Text>
+            <Text style={className`text-white`}>
+             { item?.status === 'IN_PROGRESS' ? 'Continue Ride' : 'Confirm Ride' }</Text>
         </TouchableOpacity>
 
         <View style={className`flex flex-row items-center justify-center border-[1px] border-[#E4EFFF]

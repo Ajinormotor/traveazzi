@@ -19,12 +19,12 @@ import dayjs from 'dayjs';
 const StartRide = () => {
 const router = useRouter()
 const { width } = Dimensions.get('window');
-const [rideDetails, setRideDetails] = useState('')
+const [rideDetails, setRideDetails] = useState<RidePayload | null>(null)
 
 
   const {id} = useLocalSearchParams()
 
-  console.log('Mange Id details:', id)
+  // console.log('Mange Id details:', id)
   const {rides} = useDriverRideStore()  
 
  const data =  rides.find((ride: any) => ride._id === id)   
@@ -170,10 +170,11 @@ style={className`flex flex-col gap-3  `}>
 <View  style={className` flex flex-col gap-4`}>
 
 
-     <View style={className`flex flex-row items-start justify-between mt-2`}>
+     <View style={className`flex flex-row items-start justify-between mt-2 z-100`}>
 
 
-          <View style={className`flex flex-col items-center justify-start gap-2  relative`}>
+          <View style={className`flex flex-col items-center 
+            justify-start gap-2  relative`}>
    <View style={className`flex flex-row gap-2 `}>
 
         <Text style={className`text-2xl  font-bold ml-[-38px]`}>
@@ -194,7 +195,7 @@ style={className`flex flex-col gap-3  `}>
 {showMenu && (
   <View style={className`
     absolute top-10 left-0 bg-white rounded-[8px] shadow-sm p-2 gap-3 
-    items-center justify-center flex-col w-full z-10
+    items-center justify-center flex-col w-full z-100
     ${showMenu ? 'flex' : 'hidden'}
   `}>
     <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
@@ -206,7 +207,7 @@ style={className`flex flex-col gap-3  `}>
 
        <TouchableOpacity onPress={handleLogout}>
     
-      <Text style={className`text-red-500 font-bold hover:text-red-300`}>
+      <Text style={className`text-red-500 font-bold hover:text-red-300 `}>
         Logout
         </Text>
       
@@ -222,9 +223,12 @@ style={className`flex flex-col gap-3  `}>
         <Text style={className`text-[14px] text-[#AAAAAA] font-bold`}>Manage your trip and requests.</Text>
       </View> */}
 
-    <TouchableOpacity>
-      <Image source={cancel} alt='' style={className`w-[20px] h-[20px]`   }  />
-    </TouchableOpacity>
+
+     <TouchableOpacity
+                    onPress={() => router.back()}>
+                  {/* <Image source={cancel} style={className`w-[20px] h-[20px]`} /> */}
+                     <Ionicons name="arrow-undo-circle-outline"  size={20} />
+                </TouchableOpacity>
 
      </View>
 
@@ -237,6 +241,9 @@ style={className`flex flex-col gap-3  `}>
         
         <Text style={className`text-black font-bold text-base`}>Ride Details</Text>
 
+  <View
+                        style={className`border border-[#EBEBEB] rounded-[8px] bg-white mt-2`}
+                      >
                 <View  style={className`flex flex-col bg-white  `}>
         
             
@@ -248,11 +255,11 @@ style={className`flex flex-col gap-3  `}>
         <View style={className`flex flex-row gap-1`}>
             <Image source={up}  alt=""
             style={className``}  />
-            <Text style={className`text-[14px] font-bold`}>{data?.originAddress}</Text>
+            <Text style={className`text-[14px] font-bold`}>{data?.originAddress ?? ''}</Text>
         </View>
         
         <Text style={className`text-[12px] font-bold text-[#434343]`}>
-          {data?.destinationAddress }
+          {data?.destinationAddress  ?? ''}
         </Text>
         </View>
         
@@ -302,16 +309,22 @@ style={className`flex flex-col gap-3  `}>
              
         
                 </View>
-      
+      </View>
+
         </View>
 
         
 
-  <View style={className`flex flex-col gap-2`}>
+  <View style={className`flex flex-col gap-2 px-2`}>
 
     {/* passengers */}
 
 {passengerUser?.data && passengerUser.data.length > 0 ? (
+
+<View style={[className`flex flex-col gap-2`]}>
+
+       <Text style={className`text-black font-bold text-base mb-2`}>Passengers</Text>
+
   <View className='flex flex-col gap-4'>
     {passengerUser.data.map((booking: any) => (
       <View key={booking._id} style={className`flex flex-row items-center justify-between py-2`}>
@@ -354,8 +367,13 @@ style={className`flex flex-col gap-3  `}>
       </View>
     ))}
   </View>
+
+  </View>
 ) : (
-  <View>
+<View style={[className`flex flex-col gap-2`]}>
+
+       <Text style={className`text-black font-bold text-base text-start mb-2`}>Passengers</Text>
+
     <Text style={className`text-center text-gray-500`}>No passengers available</Text>
   </View>
 )
@@ -364,39 +382,7 @@ style={className`flex flex-col gap-3  `}>
 
   </View>
 
-{/* button */}
 
-<View style={className`flex flex-col gap-2`}>
-
-      {/* Button */}
-  <View 
-  style={className`w-full flex items-center justify-center`}>
-    <TouchableOpacity onPress={handleSubmit}
-      style={className`w-full h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px]`}>
-      <Text style={className`text-white text-[16px]`}>
-        
-      {loading ? (
-                          <ActivityIndicator color="#fff" />
-                        ) : (
-                          <Text style={className`text-white text-[16px]`}>
-                          Start Ride</Text>
-                        )}
-        
-        </Text>
-    </TouchableOpacity>
-  </View>
-
-        {/* Button */}
-  <View style={className`w-full flex items-center justify-center`}>
-    <TouchableOpacity onPress={() => router.back()}
-      style={className`w-full h-[46px] bg-[#F0F0F0] flex items-center justify-center rounded-[6px]`}>
-      <Text style={className`text-[#FF0000] text-[16px]`}>Cancel Offer</Text>
-    </TouchableOpacity>
-  </View>
-
-
-    
-</View>
 
 </View>
 
@@ -405,6 +391,36 @@ style={className`flex flex-col gap-3  `}>
      </View>
 
     </ScrollView>
+
+
+    {/* button */}
+{rideDetails?.status !== "COMPLETED" && rideDetails?.status !== "CANCELED" && (
+  <View style={className`flex flex-col gap-2`}>
+
+    {/* Start or Continue Button */}
+    <View style={className`w-full flex items-center justify-center`}>
+      <TouchableOpacity onPress={handleSubmit}
+        style={className`w-full h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px]`}>
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={className`text-white text-[16px]`}>
+            {rideDetails?.status === "SCHEDULED" ? "Start Ride" : "Continue Ride"}
+          </Text>
+        )}
+      </TouchableOpacity>
+    </View>
+
+    {/* Cancel Button */}
+    <View style={className`w-full flex items-center justify-center`}>
+      <TouchableOpacity onPress={() => router.back()}
+        style={className`w-full h-[46px] bg-[#F0F0F0] flex items-center justify-center rounded-[6px]`}>
+        <Text style={className`text-[#FF0000] text-[16px]`}>Cancel Ride</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+)}
+
 
     </View>
 
@@ -418,6 +434,7 @@ export default StartRide
 import user from "../../../assets/images/user.png"
 import { useDriverRideStore } from '@/store/driverStore'
 import { useAuthStore } from '@/store/authStore'
+import { RidePayload } from '@/lib/interface/ride.type'
 
 const users = [
   {

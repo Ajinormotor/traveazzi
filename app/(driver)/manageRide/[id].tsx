@@ -37,7 +37,7 @@ const {getPassengerRides, completeBookingRide} = useDriverRideStore()
 
 const [passengerUser, setPassengerUser] = useState<any>(null);
 const[isLoading, setIsLoading] = useState(true);  
-const [rideDetails, setRideDetails] = useState('')
+const [rideDetails, setRideDetails] = useState<RidePayload | null>(null)
 const [showMenu, setShowMenu] = useState<string | null>(null);
 
 
@@ -66,7 +66,7 @@ const handleComplete = (id: string) => {
 useEffect(() => {
     if (id && rides.length > 0) {
       const data = rides.find((ride: any) => ride._id === id);
-      console.log('Manage Ride details:', data);
+      // console.log('Manage Ride details:', data);
       setRideDetails(data || null); 
     }
 
@@ -320,6 +320,7 @@ const styles = StyleSheet.create({})
 
 
 import user from "../../../assets/images/user.png"
+import { RidePayload } from '@/lib/interface/ride.type'
 
 const users = [
   {

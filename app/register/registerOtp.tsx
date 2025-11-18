@@ -82,7 +82,7 @@ const RegisterOtp = () => {
         });
       }
    
-      route.push('/signup/register');
+      route.push('/(auth)/signup');
     } catch (error: any) {
       setError(true);
       const errorMessage =
@@ -140,12 +140,12 @@ const RegisterOtp = () => {
           </View>
 
           {/* Didn't get code */}
-          <View style={className`flex flex-row`}>
+          <View style={className`flex flex-row gap-1 items-center`}>
             <Text style={className`text-[14px] font-medium underline`}>
               Didn't get code?
             </Text>
-          </View>
 
+            
           {/* Countdown + Options */}
           <View style={className`flex flex-row gap-2`}>
             <View
@@ -160,14 +160,10 @@ const RegisterOtp = () => {
               </Text>
             </View>
 
-            <View
-              style={className`bg-[#F6F6F6] max-w-[146px] w-full h-[29px] rounded-[30px] flex flex-row items-center justify-center`}
-            >
-              <Text style={className`text-[#969696] text-[14px]`}>
-                Call me with a code
-              </Text>
-            </View>
+          
           </View>
+          </View>
+
 
           {/* Continue Button */}
           <TouchableOpacity

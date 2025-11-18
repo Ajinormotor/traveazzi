@@ -12,7 +12,7 @@ import options from "../../assets/images/options.png"
 import { riderListData } from '@/constants/data/riderList'
 // import routes_arrow from "../assets/images/routes_arrow.png"
 import userOne from "../../assets/images/user_logo img (1).png"
-import { useRouter } from 'expo-router'
+import { Link, useRouter } from 'expo-router'
 import { useAuthStore } from '@/store/authStore'
 import { useDriverRideStore } from '@/store/driverStore'
 
@@ -22,6 +22,9 @@ import dayjs from 'dayjs';
 import up from "../../assets/images/up.png"
 import downs from "../../assets/images/down_arrow.png"
 import arrow from "../../assets/images/arrow-right.png"
+
+import trip from "../..//assets/images/no_trip.png"
+import Ionicons from '@expo/vector-icons/Ionicons'
 
 const Rides = () => {
 const [loading,setLoading] = useState<boolean >(true)
@@ -45,7 +48,7 @@ useEffect(() => {
   getAllRides()
 },[])
 
-// console.log('All rides:', rides)
+// console.log('All rides in rides:', rides)
   
 
 
@@ -128,9 +131,11 @@ showsVerticalScrollIndicator={false}
         <Text style={className`font-medium text-[16px]`}>Available  ride...</Text>
 
         
-    <TouchableOpacity>
-       <Image source={cancel} alt='' style={className`w-[20px] h-[20px]`   }  />
-   </TouchableOpacity>
+     <TouchableOpacity
+                          onPress={() => route.back()}>
+                        {/* <Image source={cancel} style={className`w-[20px] h-[20px]`} /> */}
+                           <Ionicons name="arrow-undo-circle-outline"  size={20} />
+                      </TouchableOpacity>
 
       </View>
 
@@ -143,15 +148,15 @@ showsVerticalScrollIndicator={false}
         {
            Array.isArray(rides)  &&  rides.map((r: any) => (
 
-                <View key={r._id}  style={className`flex flex-col gap-2`}>
+    <View key={r._id}  style={className`flex flex-col gap-2`}>
 
 <View style={className`flex flex-col gap-[10px] bg-white`} > 
+ <View style={className`flex flex-row items-center justify-between`}>
 
-                    <View style={className`flex flex-row items-center justify-between`}>
-
-                        <View style={className`w-[101px] h-[31px] bg-[#F7F7F7] rounded-[5px] p-1 flex 
-                            flex-row items-center justify-center`}>
-                            <Text>{r.vehicle.plateNumber}</Text>
+    <View style={className`w-[101px] h-[31px] bg-[#F7F7F7] rounded-[5px] p-1 flex 
+         flex-row items-center justify-center`}>
+                            <Text>
+                              {r.vehicle.plateNumber}</Text>
                     </View>
                 <View>
          <Text style={className`text-2xl text-[#008000]`}>NGN {r.pricePerSeat}</Text>
@@ -263,7 +268,25 @@ onPress={() =>
     })
 }
 style={className`w-[361px] h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px]  `}>
-    <Text style={className`text-white text-[16px]`}>Request To Join</Text>
+
+
+  
+  
+      
+   {Array.isArray(rides) && (
+  (() => {
+    // Find if any ride is currently in progress
+    const activeRide = rides.find((r: any) => r.status === 'IN_PROGRESS');
+
+    return (
+      <Text style={className`text-white text-[16px]`}>
+        {activeRide ? 'Continue Ride' : 'Request To Join'}
+      </Text>
+    );
+  })()
+)}
+
+         
 </TouchableOpacity>
 
 </View>
@@ -273,8 +296,23 @@ style={className`w-[361px] h-[46px] bg-[#245AB0] flex items-center justify-cente
           }
    </View>
             :
- <View style={className`flex-1 items-center justify-center min-h-[300px]`}>
+ <View style={className`flex-1 flex-col items-center justify-center min-h-[300px]`}>
+    <Image  source={trip}
+style={{}  }  />
        <Text style={className`text-[#AAAAAA] text-2xl font-bold`}>No rides available</Text>
+
+       <TouchableOpacity  onPress={ () => route.push('/(passenger)/rides') }
+   
+       >
+
+        <Text    style={
+      className`text-blue-500 text-base`
+     } >
+  Home
+        </Text>
+     
+       
+       </TouchableOpacity>
     </View>
 
          

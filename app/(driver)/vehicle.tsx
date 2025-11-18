@@ -92,7 +92,7 @@ style={className`h-[85%] bg-[#FAFAFA] flex-col flex rounded-t-[30px]  gap-7 p-1`
 {showMenu && (
   <View style={className`
     absolute top-10 left-0 bg-white rounded-[8px] shadow-sm p-2 gap-3 bo
-    items-center justify-center flex-col w-full z-10
+    items-center justify-center flex-col w-full z-100
     ${showMenu ? 'flex' : 'hidden'}
   `}>
     <TouchableOpacity>
@@ -104,7 +104,7 @@ style={className`h-[85%] bg-[#FAFAFA] flex-col flex rounded-t-[30px]  gap-7 p-1`
 
        <TouchableOpacity onPress={handleLogout}>
     
-      <Text style={className`text-red-500 font-bold hover:text-red-300`}>
+      <Text style={className`text-red-500 font-bold hover:text-red-300 z-30`}>
         Logout
         </Text>
       
@@ -133,7 +133,7 @@ style={className`h-[85%] bg-[#FAFAFA] flex-col flex rounded-t-[30px]  gap-7 p-1`
     
 <View style={className`flex flex-col gap-3 mt-3`}>
   {vehicles.map((vehicle: VehiclePayload) => (
-    <TouchableOpacity onPress={()=> route.push('/create')}
+    <TouchableOpacity
       key={vehicle?._id}
       style={className`rounded-[8px] p-2 py-3 border-t border-[#ECECEC]`}
     >
@@ -186,7 +186,9 @@ style={className`h-[85%] bg-[#FAFAFA] flex-col flex rounded-t-[30px]  gap-7 p-1`
 
 {Array.isArray(vehicles) && vehicles.length === 0 && (
   <View style={className`flex-1 items-center justify-center`}>
-       <Text style={className`text-[#AAAAAA] text-2xl font-bold`}>No vehicle please add a vehicle</Text>
+       <Text style={className`text-[#AAAAAA] text-2xl font-bold`}>
+        No vehicle please add a vehicle
+        </Text>
     </View>
 )}
 

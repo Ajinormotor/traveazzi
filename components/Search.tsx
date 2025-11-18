@@ -15,7 +15,11 @@ import { useDriverRideStore } from '@/store/driverStore'
 
 
 const seatData = [
-  {id: "1", value: "1"},   {id: "2", value: "2"},   {id: "3", value: "3"},   {id: "4", value: "4"},   {id: "5", value: "5"},
+  {id: "1", value: "1"},  
+  {id: "2", value: "2"},  
+  {id: "3", value: "3"},  
+  {id: "4", value: "4"},  
+  {id: "5", value: "5"},
 ]
 
 
@@ -75,7 +79,7 @@ const handleLogout = async() => {
       <View style={className`flex flex-col gap-[1px]`}>
         {/* <Text style={className`text-2xl  font-bold`}>Where are you headed?</Text> */}
             <View style={className`flex flex-row items-center gap-2  relative`}>
-                <Text style={className`text-black text-2xl font-bold`}>Where you headed to?</Text>
+                <Text style={className`text-black text-2xl font-bold`}>My Trips?</Text>
         
         <TouchableOpacity onPress={handleToggle}>
                   <Image source={down} alt=''
@@ -85,19 +89,19 @@ const handleLogout = async() => {
         {showMenu && (
           <View style={className`
             absolute top-10 left-0 bg-white rounded-[8px] shadow-sm p-2 gap-3 
-            items-center justify-center flex-col w-full z-10
+            items-center justify-center flex-col w-full z-100 bg-[#fafafa]
             ${showMenu ? 'flex' : 'hidden'}
           `}>
             <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
-              <Link href="/vehicle"
+              <Link href="/(passenger)"
               style={className`border-b-1 border-gray-200`}>
-              <Text>Vehicle</Text>
+              <Text>home</Text>
                </Link>
             </TouchableOpacity>
         
                <TouchableOpacity onPress={handleLogout}>
             
-              <Text style={className`text-red-500 font-bold hover:text-red-300`}>
+              <Text style={className`text-red-500 font-bold hover:text-red-300 z-100`}>
                 Logout
                 </Text>
               
@@ -106,11 +110,13 @@ const handleLogout = async() => {
         )}
         
             </View>
-        <Text style={className`text-[14px] text-[#AAAAAA] font-bold`}>Type a city, landmark, or Address...</Text>
+        <Text style={className`text-[14px] text-[#AAAAAA] font-bold`}>
+          Type a city, landmark, or Address...
+          </Text>
       </View>
 
     <TouchableOpacity>
-      <Image source={cancel} alt='' style={className`w-[20px] h-[20px]`   }  />
+      <Image source={cancel} alt='' style={className`w-[20px] h-[20px] hidden`   }  />
     </TouchableOpacity>
 
      </View>
@@ -119,18 +125,18 @@ const handleLogout = async() => {
 
      <View style={className`flex flex-col gap-3`}>
 
-     <TouchableOpacity style={className`w-[361px] w-full h-[46px] bg-[#F6F6F6] rounded-[8px] w-full flex flex-row items-center 
+     {/* <TouchableOpacity style={className`w-[361px] w-full h-[46px] bg-[#F6F6F6] rounded-[8px] w-full flex flex-row items-center 
        px-2 gap-3 `}>
         <Image source={gps}  style={className``}  />
         <TextInput  placeholder='Legend Hotel Lagos Airport, Curio collection'  style={className`max-w-[85%] w-full bg-transparent text-[16px]`}  />
      
-     </TouchableOpacity>
+     </TouchableOpacity> */}
 
         <TouchableOpacity  onPress={() =>  route.push(`/(passenger)/rides`)}
-        style={className`w-[361px] w-full h-[46px] bg-[#F6F6F6] rounded-[8px] w-full flex flex-row items-center 
-       px-2  gap-3`}>
+        style={className`w-[361px] w-full h-[46px] bg-[#F6F6F6] rounded-[8px] w-full 
+          flex flex-row items-center  px-2  gap-3`}>
         <Ionicons name='search' color="black" size={20} style={className``}  />
-        <TextInput  placeholder='University of benin'  
+        <TextInput  placeholder=''  
         value={destination}
         onChangeText={setDestination}
         onSubmitEditing={handleSearch}
@@ -142,14 +148,15 @@ const handleLogout = async() => {
      </View>
 
      
-     <View style={className`flex flex-col gap-3`}>
+     <View style={className`flex flex-col gap-3 hidden`}>
 
      <View style={className`flex flex-col gap-[1px]`}>
         <Text style={className`text-2xl  font-bold`}>Seats</Text>
-        <Text style={className`text-[14px] text-[#AAAAAA] font-bold`}>Type a city, landmark, or Address...</Text>
+        <Text style={className`text-[14px] text-[#AAAAAA] font-bold`}>
+          Type a city, landmark, or Address...</Text>
       </View>
 
-      <View  style={className` w-full`}>
+      <View  style={className` w-full  `}>
         <FlatList 
         data={seatData}
         horizontal
@@ -173,6 +180,8 @@ const handleLogout = async() => {
      </View>
 
 
+
+{/* More */}
 <View style={className`flex flex-col gap-3`}>
 
   <TouchableOpacity  >
@@ -191,7 +200,7 @@ const handleLogout = async() => {
 
     <TouchableOpacity
         onPress={() => {
-          console.log('Navigating to:', s.path);
+          // console.log('Navigating to:', s.path);
           router.push(s.path as any);
         }}
       >
@@ -201,7 +210,7 @@ const handleLogout = async() => {
 
 <TouchableOpacity
    onPress={() => {
-          console.log('Navigating to:', s.path);
+          // console.log('Navigating to:', s.path);
           router.push(s.path as any);
         }}
 style={className`flex flex-col gap-1`}>

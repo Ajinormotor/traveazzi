@@ -26,10 +26,11 @@ interface AuthStore {
     confirmPassword: string;
   }) => Promise<any>;
   logout: () => Promise<any>;
+  userProfile: () => Promise<any>;
   checkAuth: () => Promise<any>;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
+export const useAuthStore = create<AuthStore>((set, get) => ({
   userEmail: null,
   loading: false,
   token: null,
@@ -163,31 +164,88 @@ export const useAuthStore = create<AuthStore>((set) => ({
     }
   },
 
-  login: async ({ email, password }) => {
-    set({ loading: true });
+ login: async ({ email, password }) => {
+  set({ loading: true });
 
-    try {
-      // Check for empty fields
-      if (!email || !password) {
+  try {
+    if (!email || !password) {
+      Toast.show({ type: "error", text1: "Please fill in all fields" });
+      set({ loading: false });
+      return false;
+    }
+
+    const response = await fetch(`${Base_Url}/auth/login/email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+    console.log("LOGIN RAW RESPONSE:", data);
+
+    // Remove old token
+    await AsyncStorage.removeItem("token");
+
+    if (response.ok && data?.success) {
+      const token = data?.data?.token?.accessToken;
+      const user = data?.data?.user;
+
+      if (!token || !user) {
+        console.log("❌ TOKEN OR USER MISSING IN SUCCESS RESPONSE");
+        Toast.show({ type: "error", text1: "Invalid server response" });
         set({ loading: false });
-        Toast.show({ type: "error", text1: "Please fill in all fields" });
         return false;
       }
 
-      const response = await fetch(`${Base_Url}/auth/login/email`, {
-        method: "POST",
-        body: JSON.stringify({
-           email, 
-          password,
-          portalType: "DRIVER",
-         }),
-        headers: { "Content-Type": "application/json" },
+      // Store in Zustand
+      set({ token, user, loading: false });
+
+      // Store in AsyncStorage
+      await AsyncStorage.setItem("token", token);
+      await AsyncStorage.setItem("user", JSON.stringify(user));
+
+      Toast.show({ type: "success", text1: "Logged in" });
+
+      return true;
+    }
+
+    // ❌ Failure branch — DO NOT overwrite token/user with undefined
+    Toast.show({ type: "error", text1: data.message || "Login failed" });
+    set({ loading: false });
+
+    return false;
+
+  } catch (error) {
+    console.log("LOGIN ERROR:", error);
+    Toast.show({ type: "error", text1: "Something went wrong" });
+    set({ loading: false });
+    return false;
+  }
+},
+
+
+ 
+
+  userProfile: async () => {
+    set({ loading: true });
+
+    try {
+     
+    const token  = await AsyncStorage.getItem('token')
+      const response = await fetch(`${Base_Url}/auth/user`, {
+        method: "GET",
+        headers: { 
+          "Content-Type": "application/json",
+             Authorization: `Bearer ${token}`, },
       });
 
       const data = await response.json()
+      if(await AsyncStorage.getItem('token')){
+        await AsyncStorage.removeItem("token")
+      }
     
       if (response.ok && data?.success) {
-        set({ loading: false, token: data?.data?.token?.accessToken  });
+        set({ loading: false, token: data?.data?.token?.accessToken, user: data?.data?.user  });
         Toast.show({ type: "success", text1: "Logged in" });
 
         await AsyncStorage.setItem("token", data?.data?.token?.accessToken);
@@ -196,13 +254,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
         return true;
       } else {
         set({ user: data?.user, token: data?.token?.accessToken, loading: false });
-        Toast.show({
-          type: "error",
-          text1: data.message || "Login failed",
-        });
         return false;
       }
     } catch (error: any) {
+      // console.log(error?.message)
       set({ loading: false });
       Toast.show({
         type: "error",
@@ -212,17 +267,6 @@ export const useAuthStore = create<AuthStore>((set) => ({
     }
   },
 
-  checkAuth: async () => {
-    try {
-      const token = await AsyncStorage.getItem("token");
-      const userJson = await AsyncStorage.getItem("user");
-      const user = userJson ? JSON.parse(userJson) : null;
-
-      set({ token, user });
-    } catch (error) {
-      console.log("Auth check failed", error);
-    }
-  },
 
   logout: async () => {
     try {
@@ -243,7 +287,19 @@ export const useAuthStore = create<AuthStore>((set) => ({
       
     } catch (error) {
         console.log("Logout failed", error);
-           Toast.show({ type: "error", text1: data?.message });
+           Toast.show({ type: "error", text1: 'An error occure'});
+    }
+  },
+
+   checkAuth: async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const userJson = await AsyncStorage.getItem("user");
+      const user = userJson ? JSON.parse(userJson) : null;
+
+      set({ token, user });
+    } catch (error) {
+      console.log("Auth check failed", error);
     }
   },
 

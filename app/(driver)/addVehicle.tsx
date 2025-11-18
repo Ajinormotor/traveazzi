@@ -150,26 +150,30 @@ const handleAddVehicle = async () => {
 
 
 
-<ScrollView  style={className`flex flex-col gap-4 `}>
+<ScrollView 
+showsHorizontalScrollIndicator={false}
+ style={className`flex flex-col gap-4  px-2`}>
 
 <View  style={className` flex flex-col gap-4`}>
 
 {/* Headint txt */}
-     <View style={className`flex flex-row items-center  gap-3`}>
-
-            <TouchableOpacity onPress={() => router.back()}>
-      {/* <Image source={cancel} alt='' style={className`w-[20px] h-[20px]`   }  /> */}
-         <Ionicons name="arrow-back-outline" size={20} color="black" />
-    </TouchableOpacity>
-
-      <View style={className`flex flex-col gap-[1px]`}>
-        <Text style={className`text-2xl  font-bold`}>Add Vehicles</Text>
-        <Text style={className`text-[14px] text-[#AAAAAA] font-bold`}>Add your car details below.</Text>
-      </View>
-
-
-
-     </View>
+ 
+        <View style={className`flex flex-row items-start justify-between`}>
+                     <View style={className`flex flex-col gap-[1px]`}>
+                       <Text style={className`text-2xl font-bold`}>
+                      Add Vehicles </Text>
+                       <Text style={className`text-[14px] text-[#AAAAAA] font-bold`}>
+                        Add your car details below.
+                       </Text>
+                     </View>
+     
+                     <TouchableOpacity
+                         onPress={() => router.back()}>
+                       {/* <Image source={cancel} style={className`w-[20px] h-[20px]`} /> */}
+                          <Ionicons name="arrow-undo-circle-outline"  size={20} />
+                     </TouchableOpacity>
+     
+                   </View>
 
      <View style={className`flex flex-col gap-4`}>
 

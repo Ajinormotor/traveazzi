@@ -152,7 +152,9 @@ style={className`w-full h-[46px] bg-[#245AB0] flex items-center justify-center r
  <View>
   <Text style={className`text-[12px]`}>
     By proceeding, I acknowledge that I have read and agree to the terms of the{' '}
-    <Text style={className`text-[#8C8C8C] underline`}>User Agreement</Text> and consent to the processing of my information in accordance with the{' '}
+    <Text style={className`text-[#8C8C8C] underline`}>
+      User Agreement</Text> and consent to the
+       processing of my information in accordance with the{' '}
     <Text style={className`text-[#8C8C8C] underline`}>Privacy Policy.</Text>
   </Text>
 </View>

@@ -13,6 +13,8 @@ import green_gps from "../../assets/images/green_gps.png"
 import transit_car from "../../assets/images/car_9855634 1.png"
 import down from "../../assets/images/down.png"
 import { LinearGradient } from 'expo-linear-gradient'
+import Ionicons from '@expo/vector-icons/Ionicons'
+
 
 
 const emoji = [
@@ -25,6 +27,7 @@ const emoji = [
 
 
 const ConfirmRide = () => {
+    const route = useRouter()
 
 const {id} = useLocalSearchParams()
 // const route = useRouter()
@@ -257,12 +260,24 @@ style={className`flex flex-col gap-3`}
 
 </View>
 
+        <View style={
+        className`flex-1 w-full flex-row gap-3 `
+     }>
     <View 
            style={className` w-full h-[39px] bg-[#F7F7F7] rounded-lg p-1`}>
             <TextInput  
             placeholder='Leave a report ....'
             style={className` max-w-[204px] w-full h-[39px] bg-[#F7F7F7] rounded-lg`} />
         </View>
+
+        
+              <TouchableOpacity 
+            //   onPress={() => route.push('/signin/loginOtp')}
+        style={className`w-full h-[46px] bg-[#245AB0] flex items-center 
+        justify-center rounded-[6px] w-[100px] `}>
+            <Text style={className`text-white text-[16px]`}>Continue</Text>
+        </TouchableOpacity>
+             </View>
 
     </View>
     : 

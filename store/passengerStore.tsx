@@ -44,11 +44,11 @@ export const usePassengerStore = create<PassengerState>((set) => ({
       return response.data.rides;
       
     } catch (error: any) {
-      console.error("Error fetching rides:", error?.response?.data || error);
-      Toast.show({
-        type: "error",
-        text1: "Failed to fetch rides",
-      });
+      // console.error("Error fetching rides:", error?.response?.data || error);
+      // Toast.show({
+      //   type: "error",
+      //   text1: "Failed to fetch rides",
+      // });
       set({ loading: false });
     }
   },
@@ -70,39 +70,44 @@ export const usePassengerStore = create<PassengerState>((set) => ({
       return response?.data;
       
     } catch (error: any) {
-      console.error("Error fetching rides:", error?.response?.data || error);
-      Toast.show({
-        type: "error",
-        text1: "Failed to fetch rides",
-      });
+      // console.error("Error fetching rides:",
+      //    error?.response?.data || error);
+      // Toast.show({
+      //   type: "error",
+      //   text1: "Failed to fetch rides",
+      // });
       set({ loading: false });
     }
   },
 
-     requestBookings: async (payload) => {
-    set({ loading: true });
-    try {
-      const token = useAuthStore.getState().token;
+requestBookings: async (payload) => {
+  set({ loading: true });
+  try {
+    const token = useAuthStore.getState().token;
 
-      const response = await axios.post(`${Base_Url}`, payload ,{
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    const response = await axios.post(`${Base_Url}`, payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-      set({ bookings: response.data.data, loading: false });
+    set({ bookings: response.data.data, loading: false });
 
-      // console.log("Fetched Rides:", response.data.rides);
-      return response.data.rides;
-    } catch (error: any) {
-      console.error("Error requesting rides:", error?.response?.data || error);
-      Toast.show({
-        type: "error",
-        text1: "Failed to request ride",
-      });
-      set({ loading: false });
-    }
-  },
+    Toast.show({
+      type: "success",
+      text1: response.data.message || "Booking successful",
+    });
+
+    return response.data.data; // keep this consistent
+  } catch (error: any) {
+    console.error("Error requesting rides:", error?.response?.data || error);
+    Toast.show({
+      type: "error",
+      text1: error.response?.data?.message || "Failed to request ride",
+    });
+    set({ loading: false });
+  }
+},
 
   payBookings: async (bookingId: string) => {
     set({ loading: true });

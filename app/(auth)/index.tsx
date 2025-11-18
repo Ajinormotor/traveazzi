@@ -8,6 +8,8 @@ import { useAuthStore } from '@/store/authStore'
 
 import apple from '../../assets/images/apple.png'
 import google from '../../assets/images/google.png'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import Toast from 'react-native-toast-message'
 // import email from '../../assets/images/mail.png'
 
 
@@ -15,25 +17,59 @@ const Logins = () => {
 
 
   const router = useRouter()
-  const {loading, login} = useAuthStore()
+  const {loading, login, user, userProfile} = useAuthStore()
   
   const [email,setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
 
-  
-const handleSubmit = async() => {
-  
-    // router.push("/(driver)")
-  // router.push("/home")
-  const success = await login({email, password})
+  // const portalType =   user.role?.name ? user.role?.name : 'PASSENGER'
 
-  if(success){
-  setEmail('')
-  setPassword('')
-    router.push("/(driver)")
-}
 
-}
+  
+const handleSubmit = async () => {
+  if (!email || !password) return;
+
+  // 1️⃣ LOGIN FIRST
+  const success = await login({ email, password });
+
+  if (!success) {
+    console.log("❌ Login failed");
+    return;
+  }
+
+  // 2️⃣ NEWLY UPDATED USER FROM STORE
+  const userFromStore = user;
+
+  // console.log("USER AFTER LOGIN:", userFromStore);
+
+  if (!userFromStore) {
+    // console.warn("❌ User not found in store after login");
+    return;
+  }
+
+  // 3️⃣ ROUTE BASED ON ROLE
+  const role = userFromStore.roles?.[0]?.name; // ← IMPORTANT FIX
+
+  if (role === "DRIVER") {
+    router.push("/(driver)");
+  } else if (role === "PASSENGER") {
+    router.push("/(passenger)");
+  } else {
+    router.push("/");
+  }
+
+  // 4️⃣ UI FEEDBACK
+  Toast.show({
+    type: "success",
+    text1: "Login successful",
+  });
+
+  setEmail("");
+  setPassword("");
+};
+
+
+
 
 
 
@@ -75,24 +111,20 @@ const handleSubmit = async() => {
 
 
 {/* First Name */}
-         <View style={className`bg-[#F0F0F0] h-[46px] w-full rounded-[8px] flex flex-row items-center p-1 gap-3`}>
+         <View 
+style={className`bg-[#F0F0F0] h-[46px] w-full rounded-[8px] 
+          flex flex-row items-center p-1 gap-3 outline-none`}>
             <TextInput  
-            placeholder='Email'
-            style={className`w-[60%]`}
-            value={email}
-            onChangeText={setEmail}
+       placeholder='Email'
+       style={className`w-[60%]`}
+       value={email}
+       onChangeText={setEmail}
             />
-
-
 
         </View>
 
-
-
-
-
-
-              <View style={className`bg-[#F0F0F0] h-[46px] w-full rounded-[8px] flex flex-row items-center p-1 gap-3`}>
+              <View style={className`bg-[#F0F0F0] h-[46px] w-full rounded-[8px] flex flex-row
+                 items-center p-1 gap-3 outline-none`}>
             <TextInput  
             placeholder='Password'
             maxLength={12}
@@ -141,7 +173,7 @@ style={className`w-full h-[46px] bg-[#245AB0] flex items-center justify-center r
      {/* google,email */}
 
      {/* Seperator */}
-     <View style={className`flex flex-row items-center gap-2`}>
+     <View style={className`hidden flex-row items-center gap-2`}>
 
       <View style={className`bg-gray-300 h-[2px] max-w-[45%] w-full` }></View>
 
@@ -153,7 +185,7 @@ style={className`w-full h-[46px] bg-[#245AB0] flex items-center justify-center r
 
      {/* google,email */}
 
-     <View style={className`flex flex-col gap-[10px] w-full`}>
+     <View style={className`hidden flex-col gap-[10px] w-full`}>
 
         <TouchableOpacity
         style={className`flex flex-row items-center justify-center bg-[#F6F6F6] 

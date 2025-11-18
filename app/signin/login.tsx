@@ -25,6 +25,7 @@ const route = useRouter()
         <Ionicons   name='arrow-back' size={20} color="black"
         />
      </TouchableOpacity>
+     
 <Text style={className`text-[24px] font-bold`} > Log in</Text>
              
      </View>

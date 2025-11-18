@@ -48,12 +48,15 @@ useEffect(() => {
   fetchingSingleRide();
 }, [id, singleRides]);
 
+// console.log('Pay Ride Details', rideDetails)
+
 if (!rideDetails) return <Text>Loading ride...</Text>; 
 
 const item = rideDetails;
 
 const handlePay = async () => {
   await payBookings(item._id);
+  route.push()
 };
 
   return (
@@ -93,7 +96,13 @@ style={className`flex flex-col gap-3`}
         <Image source={distanceIcon} alt=''
         style={className`w-[24px] h-[24px]`  }  />
         <Text style={className`flex flex-row gap-1 text-[18px]`}>
-            <Text style={className`font-bold text-[#000000]`} >You've Arrived!</Text>
+            <Text style={className`font-bold text-[#000000]`} >
+
+                Journey Underway
+                
+                {/* You've Arrived! */}
+                
+                </Text>
             
         </Text>
     </View>
@@ -160,7 +169,7 @@ style={className`flex flex-col gap-3`}
 
                       <View style={className`w-[101px] h-[31px] bg-[#F7F7F7] rounded-[5px] p-1 flex  font-bold
                             flex-row items-center justify-center`}>
-                            <Text>{item?.plate_no}</Text>
+                            <Text>{item?.vehicle?.plate_no ?? '12345'}</Text>
                         </View>
 
                       
@@ -181,14 +190,18 @@ style={className`flex flex-col gap-3`}
     className='w-[50px] h-[50px] rounded-full'  />
     </View>
     <View style={className`flex flex-col gap-[1px]`}>
-        <Text style={className`text-sm font-bold text-black`}> {item?.rider_name} </Text>
-        <Text style={className`font-bold text-[12px]  text-[#A1A1A1]`}> {item?.vehicle} </Text>
+        <Text style={className`text-sm font-bold text-black`}>
+             {item?.driver?.firstName}       {item?.driver?.lastName} 
+             </Text>
+        <Text style={className`font-bold text-[12px]  text-[#A1A1A1]`}
+        > {item?.vehicle?.color ?? 'N/A'} </Text>
     </View>
 
 </View>
 
   <View>
-                 <Text style={className`text-2xl text-[#008000] font-bold`}>NGN {item?.price}</Text>
+                 <Text style={className`text-2xl text-[#008000] font-bold`}>
+                    NGN {item?.price}</Text>
                         </View>
 
 
@@ -226,12 +239,24 @@ style={className`flex flex-col gap-3`}
 
 </View>
 
-    <View 
-           style={className` w-full h-[39px] bg-[#F7F7F7] rounded-lg p-1`}>
-            <TextInput  
-            placeholder='Leave a report ....'
-            style={className` max-w-[204px] w-full h-[39px] bg-[#F7F7F7] rounded-lg`} />
-        </View>
+
+   <View style={className`flex-1 w-full flex-row gap-3`}>
+  
+  <View style={className`flex-1 h-[47px] bg-[#F7F7F7] rounded-lg p-1`}>
+    <TextInput  
+      placeholder='Leave a report ....'
+      style={className`w-full h-full bg-[#F7F7F7] rounded-lg px-2 `} 
+    />
+  </View>
+
+  <TouchableOpacity 
+  onPress={() => route.push('/(passenger)')}
+    style={className`w-[100px] h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px]`}>
+    <Text style={className`text-white text-[16px]`}>Continue</Text>
+  </TouchableOpacity>
+
+</View>
+
 
     </View>
     : 
