@@ -36,10 +36,14 @@ const Search = () => {
 const route = useRouter()
 const [destination, setDestination] = useState('');
 
-const handleSearch = () => { 
+const handleSearch = () => {
+  if (!destination.trim()) return;
 
-    route.push(`/(passenger)/rides`);
-  
+    route.push({
+      pathname: '/(passenger)/rides',
+      params: { q: destination.trim() },
+    });
+
 };
 
 const [showMenu, setShowMenu] = useState(false)
@@ -79,7 +83,7 @@ const handleLogout = async() => {
       <View style={className`flex flex-col gap-[1px]`}>
         {/* <Text style={className`text-2xl  font-bold`}>Where are you headed?</Text> */}
             <View style={className`flex flex-row items-center gap-2  relative`}>
-                <Text style={className`text-black text-2xl font-bold`}>My Trips?</Text>
+                <Text style={className`text-black text-2xl font-bold`}>My Trips</Text>
         
         <TouchableOpacity onPress={handleToggle}>
                   <Image source={down} alt=''
@@ -89,13 +93,13 @@ const handleLogout = async() => {
         {showMenu && (
           <View style={className`
             absolute top-10 left-0 bg-white rounded-[8px] shadow-sm p-2 gap-3 
-            items-center justify-center flex-col w-full z-100 bg-[#fafafa]
+            items-center justify-center flex-col w-[60%] z-100 bg-[#fafafa]
             ${showMenu ? 'flex' : 'hidden'}
           `}>
             <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
               <Link href="/(passenger)"
               style={className`border-b-1 border-gray-200`}>
-              <Text>home</Text>
+              <Text> Home </Text>
                </Link>
             </TouchableOpacity>
         
@@ -132,18 +136,19 @@ const handleLogout = async() => {
      
      </TouchableOpacity> */}
 
-        <TouchableOpacity  onPress={() =>  route.push(`/(passenger)/rides`)}
-        style={className`w-[361px] w-full h-[46px] bg-[#F6F6F6] rounded-[8px] w-full 
+        <View
+        style={className`w-[361px] w-full h-[46px] bg-[#F6F6F6] rounded-[8px] w-full
           flex flex-row items-center  px-2  gap-3`}>
         <Ionicons name='search' color="black" size={20} style={className``}  />
-        <TextInput  placeholder=''  
+        <TextInput  placeholder='Where are you headed?'
+        returnKeyType='search'
         value={destination}
         onChangeText={setDestination}
         onSubmitEditing={handleSearch}
         style={className`max-w-[82%] w-full bg-transparent text-[16px]`}  />
         <Image source={gps}  style={className``}  />
-        
-     </TouchableOpacity>
+
+     </View>
 
      </View>
 

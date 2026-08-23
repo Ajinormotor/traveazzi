@@ -53,17 +53,18 @@ import Toast from 'react-native-toast-message';
     const {registerMailOtp} = useAuthStore()
 
     const handleSubmit = async() => {
+      const code = otp.join('');
 
-        //  route.push('/(auth)/signup')
- const {success , message} = await registerMailOtp(otp.join(''), userEmail  ?? undefined)
+      if (code.length < 6) {
+        Toast.show({ type: 'error', text1: 'Enter the full 6-digit code' });
+        return;
+      }
 
- if (success) {
-  console.log("Navigating to /signup");
-  Toast.show({ type: 'success', text1: message || 'Email verified' });
-  // route.push('/(auth)/signup');
-}
- route.push('/(auth)/signup');
+      const verified = await registerMailOtp(code, userEmail ?? undefined);
 
+      if (verified) {
+        route.push('/(auth)/signup');
+      }
     }
   
     return (

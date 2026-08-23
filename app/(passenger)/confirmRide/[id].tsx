@@ -1,4 +1,4 @@
-import { Image, ImageBackground, ScrollView, StyleSheet,
+import { ActivityIndicator, Image, ImageBackground, ScrollView, StyleSheet,
      Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import className, { style } from 'twrnc'
@@ -26,6 +26,7 @@ import downs from "../../../assets/images/down_arrow.png"
 
 import dayjs from 'dayjs'
 import { usePassengerStore } from '@/store/passengerStore'
+import Ionicons from '@expo/vector-icons/Ionicons'
 
 const ConfirmRide = () => {
 
@@ -48,7 +49,7 @@ useEffect(() => {
   fetchingSingleRide();
 }, [id, singleRides]);
 
-if (!rideDetails) return <Text>Loading ride...</Text>;
+if (!rideDetails) return <View style={[className`flex-1 items-center justify-center`]}> <ActivityIndicator size={40}  color="#000"  /></View>; 
 
 const item = rideDetails;
 // console.log('Ride details:', item);
@@ -72,7 +73,9 @@ const handleConfirm = async () => {
       pathname: '/payRide/[id]',
       params: { id: item._id }
     });
-  } else {
+    return;
+  }
+
     const payload = {
       rideId: item._id,
       seatsNeeded: item?.initialSeats ?? 1,
@@ -80,9 +83,16 @@ const handleConfirm = async () => {
       dropoffAddress: item?.originAddress,
     };
 
-    await requestBookings(payload as any);
+    const booking = await requestBookings(payload as any);
     setIsLoading(false);
-  }
+
+    // booking created -> go to live trip tracking
+    if (booking?._id || booking?.id) {
+      route.push({
+        pathname: '/transitRide/[id]',
+        params: { id: item._id, bookingId: booking._id ?? booking.id },
+      });
+    }
 };
 
 
@@ -121,19 +131,25 @@ style={className`flex flex-col gap-3`}
   <View style={className`flex flex-row w-full items-center justify-between bg-white`}>
 
     <View style={className`flex flex-row items-center justify-between gap-[10px] w-full p-3`}>
+
       <View style={className`flex flex-col gap-1 py-4`}>
         <Text style={className`text-[20px] font-bold`}>
             {item?.destinationAddress ?? ''}
             </Text>
-        <Text style={className`text-[12px] font-bold text-[#AAAAAA]`}>
+        <Text style={className`text-[12px] font-bold text-[#AAAAAA] hidden`}>
       {item?.destinationAddress ?? ''}
             </Text>
       </View>
+
+      
+      <TouchableOpacity
+                          onPress={() => route.back()}>
+                        {/* <Image source={cancel} style={className`w-[20px] h-[20px]`} /> */}
+                           <Ionicons name="arrow-undo-circle-outline"  size={20} />
+                      </TouchableOpacity>
     </View>
 
-    <TouchableOpacity onPress={() => route.back()}>
-      <Image source={cancel} alt='' style={className`w-[20px] h-[20px]`} />
-    </TouchableOpacity>
+
 
   </View>
 
@@ -148,13 +164,18 @@ style={className`flex flex-col gap-3`}
         <Text style={className`text-white`}>Share Ride details</Text>
     </TouchableOpacity>
 
-    <TouchableOpacity  onPress={() => route.back()}
+    { item?.status === 'SCHEDULED' ? <TouchableOpacity  onPress={() => route.back()}
     style={className`w-[175px] h-[36px] flex flex-row  items-center justify-center
          gap-2 rounded-lg bg-[#DC3545]`}>
         <Image source={white_cancel}  alt=''
         style={className`flex flex-row items-center justify-center` } />
         <Text style={className`text-white`}>Cancel Ride</Text>
     </TouchableOpacity>
+
+    :
+
+    ''
+}
 
 </View>
 
@@ -176,7 +197,7 @@ style={className`flex flex-col gap-3`}
                             <Text>{item.vehicle?.plateNumber ?? ''}</Text>
                         </View>
                         <View>
-                 <Text style={className`text-2xl text-[#008000]`}>NGN {item?.pricePerSeat ?? ''}</Text>
+                 <Text style={className`text-2xl text-[#008000]`}>₦{item?.pricePerSeat ?? ''}</Text>
                         </View>
 
                     </View>
@@ -185,13 +206,18 @@ style={className`flex flex-col gap-3`}
 
                    <View style={className`flex flex-row items-center justify-between`}>
 
+
+{/* Driver and vehicle details */}
 <View style={className`flex flex-row gap-1`}>
+
     <View>
+
     <Image source={userOne} alt=''
     className='w-[50px] h-[50px] rounded-full'  />
     </View>
+
     <View style={className`flex flex-col gap-[1px]`}>
-        <Text style={className`text-sm font-bold text-black`}> {item?.firstName ?? 'Martins Ken'} </Text>
+        <Text style={className`text-sm font-bold text-black`}> {item?.driver?.firstName ?? ''} {item?.driver?.lastName ?? ''} </Text>
         <Text style={className`font-bold text-[12px]  text-[#A1A1A1]`}> 
             {item?.vehicle.make ?? 'Blue'},
              {item?.vehicle.color ?? 'Blue'} 
@@ -244,9 +270,9 @@ style={className`flex flex-col gap-3`}
  style={className``}   />
 
  <Text style={className`max-w-[300px] w-full`}>
-    <Text style={className`text-[#AAAAAA] text-[12px]`}>Your driver is currently
-        <Text style={className`text-[#28A745]`}> 3.2  </Text>mile away from your 
-        closest landmark:   <Text style={className`text-[#007BFF]`}>Rainoil Fuel Station. </Text> You can call the driver to discuss
+    <Text style={className`text-[#AAAAAA] text-[12px]`}><Text style={className`text-[#28A745] hidden opacity-0`}>
+      {item?.driver?.firstName ?? ''} {item?.driver?.lastName ?? ''} </Text> is currently mile away from your 
+        closest landmark: <Text style={className`text-[#007BFF] opacity-0`}> </Text> You can call the driver to discuss
          a suitable meetup point.</Text>
 
  </Text>
@@ -269,9 +295,8 @@ style={className`flex flex-col gap-3`}
         
         <View style={className`flex flex-col gap-1 py-4`}>
         
-        <View>
-            
-        </View>
+  
+
         <View style={className`flex flex-row gap-1`}>
            <Image source={up}  alt=""
     style={className``}  />
@@ -328,7 +353,10 @@ style={className`flex flex-col gap-3`}
         <TouchableOpacity  onPress={() => handleConfirm()}
          style={className`bg-[#245AB0] w-[271px] h-[44px] flex items-center justify-center rounded-lg`}>
             <Text style={className`text-white`}>
-             { item?.status === 'IN_PROGRESS' ? 'Continue Ride' : 'Confirm Ride' }</Text>
+             { item?.status === 'IN_PROGRESS' && 'Continue Ride'  }
+               { item?.status === 'SCHEDULED' && 'Request Ride' }
+             
+             </Text>
         </TouchableOpacity>
 
         <View style={className`flex flex-row items-center justify-center border-[1px] border-[#E4EFFF]

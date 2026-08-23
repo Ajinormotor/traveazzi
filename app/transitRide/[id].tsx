@@ -1,33 +1,106 @@
-import { Image, ImageBackground, ScrollView, StyleSheet, Text, TextInput,
+import { ActivityIndicator, Image, ImageBackground, ScrollView, StyleSheet, Text, TextInput,
      TouchableOpacity, View } from  'react-native'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { riderListData } from '@/constants/data/riderList'
-import className, { style } from 'twrnc'
+import className from 'twrnc'
 import transit_bg from "../../assets/images/bg_map_ongoing.png"
 import indicator from "../../assets/images/indicator.png"
 import distanceIcon from "../../assets/images/Flash-Fast-Speed--Streamline-Core.png.png"
 import i from "../../assets/images/i.png"
 import green_gps from "../../assets/images/green_gps.png"
 import transit_car from "../../assets/images/car_9855634 1.png"
-import { LinearGradient} from "expo-linear-gradient"
+import userOne from "../../assets/images/user_logo img (1).png"
+import { LinearGradient } from "expo-linear-gradient"
+import { useDriverRideStore } from '@/store/driverStore'
+import { usePassengerStore } from '@/store/passengerStore'
+
+const RATING_FACES = ['😞', '🙁', '😐', '🙂', '😍']
+
+const STATUS_CONFIG: Record<string, { label: string; progress: string }> = {
+  PENDING: { label: 'Waiting for driver to accept...', progress: '10%' },
+  CONFIRMED: { label: 'Driver accepted! Ride starting soon', progress: '50%' },
+  IN_PROGRESS: { label: 'Ride in progress', progress: '70%' },
+}
 
 const TransitRide = () => {
 
-const {id} = useLocalSearchParams()
+const { id, bookingId } = useLocalSearchParams<{ id?: string[] | string; bookingId?: string[] | string }>()
+const rideId = Array.isArray(id) ? id[0] : id
+const activeBookingId = Array.isArray(bookingId) ? bookingId[0] : bookingId
 const route = useRouter()
 
-const item = riderListData.find(item => item.id === id)
+const { singleRides } = useDriverRideStore()
+const { getMyBookings, submitRating } = usePassengerStore()
 
+const [rideDetails, setRideDetails] = useState<any>(null)
+const [booking, setBooking] = useState<any>(null)
+const [ratingScore, setRatingScore] = useState(0)
+const [comment, setComment] = useState('')
+const [submitting, setSubmitting] = useState(false)
 
+// fetch the actual ride details
+useEffect(() => {
+    const fetchRide = async () => {
+        if (!rideId) return;
+        const result = await singleRides(rideId);
+        setRideDetails(result);
+    };
+    fetchRide();
+}, [rideId])
 
-const handleConfirm = (item: any) => {
-  if (item?.id) {
-    route.push(`/confirmRide/${item.id}`);
-  } else {
-    console.error('Invalid item or missing id');
-  }
+// poll booking status until the trip ends
+useEffect(() => {
+    let cancelled = false;
+
+    const poll = async () => {
+        const list = await getMyBookings();
+        if (cancelled || !Array.isArray(list)) return;
+
+        const match =
+            list.find((b: any) => b?._id === activeBookingId) ??
+            list.find((b: any) => {
+                const bRideId = typeof b?.rideId === 'object' ? b?.rideId?._id : b?.rideId;
+                return bRideId === rideId;
+            });
+
+        if (match) setBooking(match);
+    };
+
+    poll();
+    const interval = setInterval(poll, 5000);
+    return () => {
+        cancelled = true;
+        clearInterval(interval);
+    };
+}, [rideId, activeBookingId])
+
+const status = booking?.status ?? 'PENDING';
+const isTerminal = status === 'COMPLETED' || status === 'REJECTED' ||
+    status === 'CANCELLED_BY_DRIVER' || status === 'CANCELLED_BY_PASSENGER';
+
+const handleSubmitRating = async () => {
+    if (!booking?._id || !ratingScore) return;
+    setSubmitting(true);
+    const ok = await submitRating(booking._id, ratingScore, comment.trim() || undefined);
+    setSubmitting(false);
+
+    if (ok) {
+        // end the ride -> back to passenger home
+        route.replace('/(passenger)/home');
+    }
 };
+
+if (!rideDetails) {
+    return (
+        <View style={className`flex-1 items-center justify-center bg-white`}>
+            <ActivityIndicator size={40} color="#245AB0" />
+        </View>
+    );
+}
+
+const item = rideDetails;
+const config = STATUS_CONFIG[status];
+const progressWidth = config?.progress ?? '100%';
 
   return (
     <ImageBackground
@@ -58,48 +131,53 @@ style={className`flex flex-col gap-3`}
    </TouchableOpacity>
 
 
-<View style={className`flex flex-col gap-[10px] b py-3 `}>
+<View style={className`flex flex-col gap-[10px] b py-3`}>
 
 <View style={className`flex flex-col gap-[10px]`}>
 
-    <View style={className`flex flex-row gap-[10px]`}>
+    <View style={className`flex flex-row gap-[10px] items-center`}>
         <Image source={distanceIcon} alt=''
         style={className`w-[24px] h-[24px]`  }  />
-        <Text style={className`flex flex-row gap-1 text-[18px]`}>
-            <Text style={className`font-bold text-[#000000]`} >59.25</Text>
-            <Text style={className`font-medium text-[#AAAAAA] ml-1`}>km/hr</Text>
+        <Text style={className`text-[18px] font-bold ${isTerminal && status !== 'COMPLETED' ? 'text-[#DC3545]' : 'text-[#000000]'}`}>
+            {status === 'COMPLETED' ? 'Trip completed!' :
+             status === 'REJECTED' ? 'Booking declined' :
+             status.startsWith('CANCELLED') ? 'Ride cancelled' :
+             config?.label ?? 'Tracking ride...'}
         </Text>
     </View>
 
+{!isTerminal && (
 <View style={className`flex flex-row items-center gap-1 `}>
 
 <Text style={className`font-bold text-[#AAAAAA] text-[14px]`}>You should be arriving by</Text>
 
 <View style={className`bg-[#F8FFFC] w-[103px] h-[30px] flex items-center justify-center text-center
   `}>
-  <Text style={className`text-[#00B964] text-[16px] font-bold`}>   {item?.location_details?.[0]?.time}
+  <Text style={className`text-[#00B964] text-[16px] font-bold`}>   
+    {item?.departureTime ? new Date(item.departureTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
   </Text>
 </View>
 
 </View>
+)}
   
 
     </View>
 
 
 {/* Linear gradient */}
+    {!isTerminal && (
     <View style={className`flex flex-row items-center gap-[10px] h-[32px] w-full px-2 bg-[#FAFAFA] rounded-[4px]`}>
 
-        <View style={className`flex flex-row gap-[10px] w-[95%] items-center `}>
+        <View style={className`flex flex-row items-center gap-[10px] w-[95%]`}>
             <LinearGradient
             colors={['#D3D3D3', '#000000']}
-            style={className` h-[6px] w-[30%]`}
-            >
-            </LinearGradient>
+            style={{ height: 6, width: progressWidth as any }}
+            />
 
         <Image source={transit_car} alt=''
             style={className`w-[24px] h-[16px]`} />
-               <View style={className`bg-[#00B964] h-[6px]  w-[55%] rounded-[1px]`}></View>
+               <View style={className`bg-[#00B964] h-[6px] flex-1 rounded-[1px]`} ></View>
 
  </View>
 
@@ -108,16 +186,16 @@ style={className`flex flex-col gap-3`}
             style={className`w-[16px] h-[16px]`} />
         </View>
 
-       
+        
     </View>
+    )}
 
     <View style={className`flex flex-row items-center gap-3 px-2 w-full h-[52px] bg-[#FAFAFA] rounded-[6px] py-[10px]`}>
                     <Image source={i} alt=''
  style={className``}   />
 
  <Text style={className`max-w-[300px] w-full`}>
-    <Text style={className`text-[#AAAAAA] text-[12px]`}>Your safety comes first! Please fasten 
-        your seatbelt and enjoy a smooth, secure ride.</Text>
+    <Text style={className`text-[#AAAAAA] text-[12px]`}>{isTerminal && status !== 'COMPLETED' ? 'Unfortunately this ride will not be happening. You can search for another ride.' : 'Your safety comes first! Please fasten your seatbelt and enjoy a smooth, secure ride.'}</Text>
 
  </Text>
                 </View>
@@ -135,10 +213,10 @@ style={className`flex flex-col gap-3`}
 
                         <View style={className`w-[101px] h-[31px] bg-[#F7F7F7] rounded-[5px] p-1 flex 
                             flex-row items-center justify-center`}>
-                            <Text>{item?.plate_no}</Text>
+                            <Text>{item?.vehicle?.plateNumber}</Text>
                         </View>
                         <View>
-                 <Text style={className`text-2xl text-[#008000] font-bold`}>NGN {item?.price}</Text>
+                 <Text style={className`text-2xl text-[#008000] font-bold`}>₦{item?.pricePerSeat}</Text>
                         </View>
 
                     </View>
@@ -153,12 +231,13 @@ style={className`flex flex-col gap-3`}
 
     <View>
 
-    <Image source={item?.image} alt=''
+    <Image source={userOne} alt=''
     className='w-[50px] h-[50px] rounded-full'  />
     </View>
     <View style={className`flex flex-col gap-[1px]`}>
-        <Text style={className`text-sm font-bold text-black`}> {item?.rider_name} </Text>
-        <Text style={className`font-bold text-[12px]  text-[#A1A1A1]`}> {item?.vehicle} </Text>
+        <Text style={className`text-sm font-bold text-black`}> {item?.rider_name ?? 'Your driver'} </Text>
+        <Text style={className`font-bold text-[12px]  text-[#A1A1A1]`}> {item?.vehicle?.make}, {item?.vehicle?.color}
+            </Text>
     </View>
 
 </View>
@@ -173,7 +252,69 @@ style={className`flex flex-col gap-3`}
 </View>
 
 
+{status === 'COMPLETED' ? (
 
+/* ---- inline rating: appears when the trip completes ---- */
+<View style={className`w-full flex flex-col  bg-white gap-3  pb-5`}>
+
+    <Text style={className`text-[14px] font-bold text-center`}>How was your trip with {' '}
+      <Text style={className`text-[#245AB0]`}>{item?.rider_name ?? 'your driver'}</Text>?
+    </Text>
+
+    <View style={className`flex flex-row justify-center gap-4`}>
+        {RATING_FACES.map((face, index) => (
+            <TouchableOpacity
+              key={face}
+              onPress={() => setRatingScore(index + 1)}
+              style={className`w-[44px] h-[44px] rounded-full items-center justify-center ${
+                ratingScore === index + 1 ? 'bg-[#245AB0]' : 'bg-[#F7F7F7]'
+              }`}>
+              <Text style={className`text-[24px]`}>{face}</Text>
+            </TouchableOpacity>
+        ))}
+    </View>
+
+    <TextInput
+      placeholder='Leave a comment (optional)...'
+      value={comment}
+      onChangeText={setComment}
+      multiline
+      maxLength={500}
+      style={className`max-w-[204px] w-full min-h-[39px] bg-[#F7F7F7] rounded-lg px-2`}
+    />
+
+    <TouchableOpacity
+      disabled={!ratingScore || submitting}
+      onPress={handleSubmitRating}
+      style={className`w-full h-[46px] ${ratingScore && !submitting ? 'bg-[#245AB0]' : 'bg-[#B0C4E8]'} flex items-center justify-center rounded-[6px]`}>
+      {submitting
+        ? <ActivityIndicator color="#fff" />
+        : <Text style={className`text-white text-[16px] font-bold`}>Submit & End Trip</Text>}
+    </TouchableOpacity>
+
+    <TouchableOpacity onPress={() => route.replace('/(passenger)/home')}>
+      <Text style={className`text-[12px] text-[#AAAAAA] text-center underline`}>Maybe later</Text>
+    </TouchableOpacity>
+
+</View>
+
+) : isTerminal ? (
+
+/* ---- ride ended without completing ---- */
+<View style={className`w-full flex flex-col bg-white gap-3 pb-5 items-center`}>
+    <Text style={className`text-[14px] text-[#AAAAAA] font-bold text-center`}>
+        This ride didn't work out. Try searching for another one!
+    </Text>
+    <TouchableOpacity
+      onPress={() => route.replace('/(passenger)/home')}
+      style={className`w-full h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px]`}>
+      <Text style={className`text-white text-[16px] font-bold`}>Back to Home</Text>
+    </TouchableOpacity>
+</View>
+
+) : (
+
+/* ---- during the trip ---- */
 <View style={className`w-full flex flex-col  bg-white gap-2  pb-5`}>
 
     <Text style={className`text-[12px] font-bold`}>How's your trip going so far?</Text>
@@ -194,7 +335,6 @@ style={className`flex flex-col gap-3`}
             </TouchableOpacity>
 
             <TouchableOpacity 
-            onPress={() => handleConfirm(item)}
             style={className`bg-[#28A745] w-[69px] h-[39px] rounded-lg flex flex-row items-center justify-center `}>
                 <Text style={className`text-white text-[14px] font-bold`}>Good</Text>
             </TouchableOpacity>
@@ -204,6 +344,7 @@ style={className`flex flex-col gap-3`}
     </View>
 
 </View>
+)}
 
                 </View>
 </ScrollView>

@@ -217,7 +217,7 @@ style={className`flex flex-col gap-3`}
 </View>
 
   <View>
-                 <Text style={className`text-2xl text-[#008000] font-bold`}>NGN {item?.price}</Text>
+                 <Text style={className`text-2xl text-[#008000] font-bold`}>₦{item?.price}</Text>
                         </View>
 
 

@@ -131,7 +131,7 @@ showsVerticalScrollIndicator={false}
                             <Text>{r.plate_no}</Text>
                         </View>
                         <View>
-                 <Text style={className`text-2xl text-[#008000]`}>NGN {r.price}</Text>
+                 <Text style={className`text-2xl text-[#008000]`}>₦{r.price}</Text>
                         </View>
 
                     </View>

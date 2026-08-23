@@ -113,7 +113,7 @@ style={className`w-full h-[46px] bg-[#245AB0] flex items-center justify-center r
      </View>
 
 {/* Seperator */}
-     <View style={className`flex flex-row items-center gap-2`}>
+     <View style={className`hidden flex-row items-center gap-2`}>
 
       <View style={className`bg-gray-300 h-[2px] max-w-[45%] w-full` }></View>
 
@@ -125,7 +125,7 @@ style={className`w-full h-[46px] bg-[#245AB0] flex items-center justify-center r
 
      {/* google,email */}
 
-     <View style={className`flex flex-col gap-[10px] w-full`}>
+     <View style={className`hidden flex-col gap-[10px] w-full`}>
 
         <TouchableOpacity
         style={className`flex flex-row items-center justify-center bg-[#F6F6F6] 

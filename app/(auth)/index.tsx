@@ -9,7 +9,6 @@ import { useAuthStore } from '@/store/authStore'
 import apple from '../../assets/images/apple.png'
 import google from '../../assets/images/google.png'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import Toast from 'react-native-toast-message'
 // import email from '../../assets/images/mail.png'
 
 
@@ -17,7 +16,7 @@ const Logins = () => {
 
 
   const router = useRouter()
-  const {loading, login, user, userProfile} = useAuthStore()
+  const {loading, login} = useAuthStore()
   
   const [email,setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
@@ -29,40 +28,13 @@ const Logins = () => {
 const handleSubmit = async () => {
   if (!email || !password) return;
 
-  // 1️⃣ LOGIN FIRST
+  // login() persists session; the root layout guard handles role-based redirect
   const success = await login({ email, password });
 
   if (!success) {
     console.log("❌ Login failed");
     return;
   }
-
-  // 2️⃣ NEWLY UPDATED USER FROM STORE
-  const userFromStore = user;
-
-  // console.log("USER AFTER LOGIN:", userFromStore);
-
-  if (!userFromStore) {
-    // console.warn("❌ User not found in store after login");
-    return;
-  }
-
-  // 3️⃣ ROUTE BASED ON ROLE
-  const role = userFromStore.roles?.[0]?.name; // ← IMPORTANT FIX
-
-  if (role === "DRIVER") {
-    router.push("/(driver)");
-  } else if (role === "PASSENGER") {
-    router.push("/(passenger)");
-  } else {
-    router.push("/");
-  }
-
-  // 4️⃣ UI FEEDBACK
-  Toast.show({
-    type: "success",
-    text1: "Login successful",
-  });
 
   setEmail("");
   setPassword("");
@@ -114,20 +86,23 @@ const handleSubmit = async () => {
          <View 
 style={className`bg-[#F0F0F0] h-[46px] w-full rounded-[8px] 
           flex flex-row items-center p-1 gap-3 outline-none`}>
-            <TextInput  
-       placeholder='Email'
-       style={className`w-[60%]`}
-       value={email}
-       onChangeText={setEmail}
-            />
+            <TextInput
+        placeholder='Email'
+        style={className`w-[60%]`}
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize='none'
+        keyboardType='email-address'
+             />
 
         </View>
 
               <View style={className`bg-[#F0F0F0] h-[46px] w-full rounded-[8px] flex flex-row
                  items-center p-1 gap-3 outline-none`}>
-            <TextInput  
+            <TextInput
             placeholder='Password'
-            maxLength={12}
+            secureTextEntry
+            autoCapitalize='none'
             style={className`w-[60%]`}
                value={password}
             onChangeText={setPassword}
@@ -143,15 +118,21 @@ style={className`bg-[#F0F0F0] h-[46px] w-full rounded-[8px]
 
 
 {/* No account */}
-<View style={className`flex flex-row`}>
+<View style={className`flex flex-row justify-between items-center`}>
   <Text style={className`text-[14px] font-medium`}>
     Don't have an account?{' '}
     <Text
       style={className`text-[#007BFF]`}
-      onPress={() => router.push('/')}
+      onPress={() => router.push('/signup')}
     >
       Sign up
     </Text>
+  </Text>
+  <Text
+    style={className`text-[12px] text-[#007BFF] underline`}
+    onPress={() => router.push('/(auth)/forgotpassword')}
+  >
+    Forgot password?
   </Text>
 </View>
 

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import bg from "../../assets/images/map_bg.png";
@@ -210,7 +211,7 @@ const DriverIndex = () => {
                             <Text
                               style={className`text-[#008000] text-sm font-semibold`}
                             >
-                              NGN {rider.pricePerSeat}
+                              ₦{rider.pricePerSeat}
                             </Text>
                           </View>
 
@@ -232,11 +233,13 @@ const DriverIndex = () => {
                 <View
                   style={className`flex-1 flex items-center justify-center min-h-[200px]`}
                 >
-                  <Text
+                  {/* <Text
                     style={className`text-[#AAAAAA] text-2xl font-bold text-center`}
                   >
                     No rides available
-                  </Text>
+                  </Text> */}
+
+                  <ActivityIndicator  color="black" size={30}  />
                 </View>
               )}
             </View>
@@ -301,7 +304,7 @@ const styles = StyleSheet.create({});
 
 //     <View style={className`flex-1 h-[2px] bg-[#ECECEC]`} />
 
-//       <Text style={className`text-[#008000] text-sm font-semibold  `}> NGN{location.price} </Text>
+//       <Text style={className`text-[#008000] text-sm font-semibold  `}> ₦{location.price} </Text>
 
 //       </View>
 

@@ -25,10 +25,10 @@ const [rideDetails, setRideDetails] = useState<RidePayload | null>(null)
   const {id} = useLocalSearchParams()
 
   // console.log('Mange Id details:', id)
-  const {rides} = useDriverRideStore()  
+  const {rides, getAllRides} = useDriverRideStore()  
 
  const data =  rides.find((ride: any) => ride._id === id)   
-//  console.log('Start Ride details:', data) 
+ console.log('Start Ride details:', data) 
 
 const {startRides,loading} = useDriverRideStore() 
 
@@ -40,6 +40,10 @@ const handleSubmit = async () => {
   }
 
   const success = await startRides(id);
+   await getPassengerRides(id)
+   await getAllRides()
+
+
 
   if(success) {
   setTimeout(() => {
@@ -71,25 +75,7 @@ const handleToggle = () => {
 const [passengerUser, setPassengerUser] = useState<any>(null);
 const[isLoading, setIsLoading] = useState(true);  
 
-// useEffect(() => {
-//   const fetchPassengerRides = async () => {
-//     setIsLoading(true);
-//     try {
-//       if (typeof id === 'string') {
-//         const result = await getPassengerRides(id); 
-//         setPassengerUser(result?.data); 
-//       } else if (Array.isArray(id) && id.length > 0) {
-//         await getPassengerRides(id[0]);
-//       }
-//     } catch (err) {
-//       console.error(err);
-//     } finally {
-//       setIsLoading(false);
-//     }
-//   };
 
-//   fetchPassengerRides(); // ✅ call the async function
-// }, []);
 
 useEffect(() => {
     if (id && rides.length > 0) {
@@ -202,6 +188,13 @@ style={className`flex flex-col gap-3  `}>
       <Link href="/vehicle"
       style={className`border-b-1 border-gray-200`}>
       <Text>Vehicle</Text>
+       </Link>
+    </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
+      <Link href="/vehicle"
+      style={className`border-b-1 border-gray-200`}>
+      <Text> Profile </Text>
        </Link>
     </TouchableOpacity>
 
@@ -338,10 +331,12 @@ style={className`flex flex-col gap-3  `}>
     
         </View>
 
-{ booking.status === 'PENDING'   &&
+
+{/* Acceppt /reject Button */}
+{ booking.status === 'PENDING'   && showRej &&
 <View
-  className="flex flex-row gap-2 items-center w-full"
-  style={{ display: showRej ? 'none' : 'flex' }}
+
+  style={[ className`flex flex-row gap-2 items-center `]}
 >
 
          <TouchableOpacity onPress={() => handleReject(booking._id)  }>
@@ -399,7 +394,14 @@ style={className`flex flex-col gap-3  `}>
 
     {/* Start or Continue Button */}
     <View style={className`w-full flex items-center justify-center`}>
-      <TouchableOpacity onPress={handleSubmit}
+
+      <TouchableOpacity
+      onPress={() => 
+  rideDetails?.status === "SCHEDULED" 
+    ? handleSubmit() 
+    : router.push(`/manageRide/${id}`)
+}
+
         style={className`w-full h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px]`}>
         {loading ? (
           <ActivityIndicator color="#fff" />
@@ -409,6 +411,7 @@ style={className`flex flex-col gap-3  `}>
           </Text>
         )}
       </TouchableOpacity>
+
     </View>
 
     {/* Cancel Button */}

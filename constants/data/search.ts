@@ -25,10 +25,10 @@ export const searchData = [
         path: '/(passenger)/history',
     },
 
-    {    id: '3',
-        img: favorites,
-        title: 'Favorites Drivers',
-        subtitle: 'Reconnect with drivers you enjoyed traveling with.',
-          path: '/(passenger)/favoriteDrivers',
-    },
+    // {    id: '3',
+    //     img: favorites,
+    //     title: 'Favorites Drivers',
+    //     subtitle: 'Reconnect with drivers you enjoyed traveling with.',
+    //       path: '/(passenger)/favoriteDrivers',
+    // },
 ]

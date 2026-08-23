@@ -1,6 +1,6 @@
-import { Image, ImageBackground, ScrollView, StyleSheet, Text, TextInput,
+import { ActivityIndicator, Image, ImageBackground, ScrollView, StyleSheet, Text, TextInput,
      TouchableOpacity, View } from  'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { riderListData } from '@/constants/data/riderList'
 import className, { style } from 'twrnc'
@@ -16,6 +16,11 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { usePassengerStore } from '@/store/passengerStore'
 import { useDriverRideStore } from '@/store/driverStore'
 
+import userOne from "../../../assets/images/user_logo img (1).png"
+import dayjs from 'dayjs'
+
+import up from "../../../assets/images/up.png"
+import downs from "../../../assets/images/down_arrow.png"
 
 const emoji = [
   { icon: '😁', label: 'Great' },
@@ -36,7 +41,8 @@ const { payBookings } = usePassengerStore();
 
 const [rideDetails, setRideDetails] = useState<any>(null);
 const [isLoading, setIsLoading] = useState(false);
-const [showReport, setShowReport] = useState<Boolean>(false); 
+const [showReport, setShowReport] = useState(false);
+
 
 useEffect(() => {
   const fetchingSingleRide = async () => {
@@ -50,13 +56,30 @@ useEffect(() => {
 
 // console.log('Pay Ride Details', rideDetails)
 
-if (!rideDetails) return <Text>Loading ride...</Text>; 
+
+
+ 
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setShowReport(true);
+  }, 500);
+
+  return () => clearTimeout(timer);
+}, []);
+
+
+  const handleShowReport = () => {
+    setShowReport(false);
+  };
+
+
+if (!rideDetails) return <View style={[className`flex-1 items-center justify-center`]}> <ActivityIndicator size={40}  color="#000"  /></View>; 
 
 const item = rideDetails;
 
 const handlePay = async () => {
   await payBookings(item._id);
-  route.push()
+  route.push('/(passenger)/home')
 };
 
   return (
@@ -92,7 +115,26 @@ style={className`flex flex-col gap-3`}
 
 <View style={className`flex flex-col gap-[10px]`}>
 
-    <View style={className`flex flex-row gap-[10px]`}>
+ {item?.status === 'COMPLETED' ?  
+ 
+ <View style={className`flex flex-row gap-[10px]`}>
+        <Image source={distanceIcon} alt=''
+        style={className`w-[24px] h-[24px]`  }  />
+        <Text style={className`flex flex-row gap-1 text-[18px]`}>
+            <Text style={className`font-bold text-[#000000]`} >
+
+                Journey Ended
+                
+                {/* You've Arrived! */}
+                
+                </Text>
+            
+        </Text>
+    </View>
+
+    :
+     
+ <View style={className`flex flex-row gap-[10px]`}>
         <Image source={distanceIcon} alt=''
         style={className`w-[24px] h-[24px]`  }  />
         <Text style={className`flex flex-row gap-1 text-[18px]`}>
@@ -106,27 +148,41 @@ style={className`flex flex-col gap-3`}
             
         </Text>
     </View>
+}
+{/* Date and time */}
 
-<View style={className`flex flex-row items-center gap-1 `}>
-
-<Text style={className`font-bold text-[#AAAAAA] text-[14px]`}>5th May 2025</Text>
-<Text style={className`font-bold text-[#AAAAAA] text-[14px]`}> 6:19PM </Text>
-
-{/* <View style={className`bg-[#F8FFFC] w-[103px] h-[30px] flex items-center justify-center text-center
-  `}>
-  <Text style={className`text-[#00B964] text-[16px] font-bold`}>   {item?.location_details?.[0]?.time}
-  </Text>
-
-</View> */}
-
-</View>
-  
 
     </View>
 
 
 {/* Linear gradient */}
-    <View style={className`flex flex-row items-center gap-[10px] h-[32px] w-full px-2 bg-[#FAFAFA] rounded-[4px]`}>
+  {item?.status === 'COMPLETED' ?  <View style={className`flex flex-row items-center gap-[10px] h-[32px] w-full px-2 bg-[#FAFAFA] rounded-[4px]`}>
+
+        <View style={className`flex flex-row gap-[10px] w-[95%] items-center `}>
+            <LinearGradient
+            colors={['#D3D3D3', '#000000']}
+            style={className` h-[6px] w-[95%]`}
+            >
+            </LinearGradient>
+
+        <Image source={transit_car} alt=''
+            style={className`w-[24px] h-[16px]`} />
+               <View style={className`bg-[#00B964] h-[6px]  w-[0%] rounded-[1px]`}></View>
+
+ </View>
+
+        <View style={className`w-[5%]`}>
+            <Image source={green_gps} alt=''
+            style={className`w-[16px] h-[16px]`} />
+        </View>
+
+       
+    </View>
+
+
+:
+
+ <View style={className`flex flex-row items-center gap-[10px] h-[32px] w-full px-2 bg-[#FAFAFA] rounded-[4px]`}>
 
         <View style={className`flex flex-row gap-[10px] w-[95%] items-center `}>
             <LinearGradient
@@ -150,6 +206,8 @@ style={className`flex flex-col gap-3`}
     </View>
 
 
+}
+
 {/* Trip Summary */}
 <View>
     <Text style={className`text-black text-[15px]`}>Trip Summary</Text>
@@ -165,16 +223,19 @@ style={className`flex flex-col gap-3`}
 
 <View style={className`flex flex-col gap-[10px] bg-white`} > 
 
-                    <View style={className`flex flex-row items-center justify-between`}>
+   <View style={className`flex flex-row items-center justify-between`}>
 
-                      <View style={className`w-[101px] h-[31px] bg-[#F7F7F7] rounded-[5px] p-1 flex  font-bold
+      <View style={className`w-[101px] h-[31px] bg-[#F7F7F7] rounded-[5px] p-1 flex  font-bold
                             flex-row items-center justify-center`}>
-                            <Text>{item?.vehicle?.plate_no ?? '12345'}</Text>
-                        </View>
+                            <Text>{item?.vehicle?.plateNumber ?? '12345'}</Text>
 
-                      
 
-                    </View>
+
+                            
+      </View>
+
+  
+  </View>
 
                     <View style={className`border-[1px] border-[#F6F5F5] w-full`}>
                         
@@ -184,31 +245,94 @@ style={className`flex flex-col gap-3`}
 
 <View style={className`flex flex-row gap-1`}>
 
+
+{/* driver details */}
+  <View style={className`flex-1 flex-row gap-1`}>
+
     <View>
 
-    <Image source={item?.image} alt=''
+    <Image source={userOne} alt=''
     className='w-[50px] h-[50px] rounded-full'  />
     </View>
+
     <View style={className`flex flex-col gap-[1px]`}>
-        <Text style={className`text-sm font-bold text-black`}>
-             {item?.driver?.firstName}       {item?.driver?.lastName} 
-             </Text>
-        <Text style={className`font-bold text-[12px]  text-[#A1A1A1]`}
-        > {item?.vehicle?.color ?? 'N/A'} </Text>
+        <Text style={className`text-sm font-bold text-black`}> {item?.driver?.firstName ?? ''} {item?.driver?.lastName ?? ''} </Text>
+        <Text style={className`font-bold text-[12px]  text-[#A1A1A1]`}> 
+            {item?.vehicle.make ?? 'Blue'},
+             {item?.vehicle.color ?? 'Blue'} 
+
+            
+            </Text>
     </View>
 
 </View>
 
+{/* price */}
   <View>
                  <Text style={className`text-2xl text-[#008000] font-bold`}>
-                    NGN {item?.price}</Text>
+                    ₦{item?.pricePerSeat}</Text>
                         </View>
+
+</View>
+
+
+
 
 
                     </View>
 
                     <View style={className`border-[1px] border-[#F6F5F5] w-full`}>
                         
+                              <View 
+                // key={location.id }
+                 style={className`flex flex-col bg-white py-2 `}>
+        
+            
+                <View style={className`flex flex-row 
+                 items-center justify-between gap-[10px] w-full  p-3`}>
+        
+        <View style={className`flex flex-col gap-1 py-4`}>
+        
+  
+
+        <View style={className`flex flex-row gap-1`}>
+           <Image source={up}  alt=""
+    style={className``}  />
+    <Text style={className`text-[14px] font-bold`}>
+  {item?.destinationAddress}
+      </Text>
+        </View>
+       
+<View style={className`flex flex-row gap-1`}>
+    <Image source={downs}  alt=""
+    style={className``}  />
+    <Text style={className`text-[14px] font-bold`}>
+  {item?.originAddress}
+      </Text>
+</View>
+        </View>
+        
+        <View style={className`w-[71px] h-[22px] rounded-lg flex items-center justify-center 
+            bg-[#F0F0F0]`}>
+            <Text style={className`font-bold text-[12px] text-[#AAAAAA]`}>
+               {dayjs(item?.departureTime).format('h:mm A')}
+                </Text>
+        </View>
+        
+        
+                </View>
+       
+            {/* <View style={className`bg-black rounded-lg flex flex-row items-center justify-center
+             max-w-[113px] h-[32px] w-full mx-3 gap-1`}>
+            <Text style={className`text-[12px] font-bold text-white`}>
+               {dayjs(item?.departureTime).format('h:mm A')}
+          
+                </Text>
+            </View> */}
+    
+             
+        
+                </View>
                         </View>
 </View>
 
@@ -221,10 +345,10 @@ style={className`flex flex-col gap-3`}
 
 
 {
-    showReport ? 
+    showReport &&
     <View style={className`flex flex-col gap-3`}>
         <Text style={className`text-black font-bold text-base`}>
-            How was your ride
+            How is  your ride going?
         </Text>
 
 <View style={className`flex flex-row gap-3`}>
@@ -250,18 +374,18 @@ style={className`flex flex-col gap-3`}
   </View>
 
   <TouchableOpacity 
-  onPress={() => route.push('/(passenger)')}
+  onPress={handleShowReport}
     style={className`w-[100px] h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px]`}>
-    <Text style={className`text-white text-[16px]`}>Continue</Text>
+    <Text style={className`text-white text-[16px]`}>Submit</Text>
   </TouchableOpacity>
 
 </View>
 
 
     </View>
-    : 
+}
 
-     <View style={className`flex flex-row gap-1 `}>
+ { item?.status === 'COOMPLETED' &&    <View style={className`flex flex-row gap-1 `}>
         <TouchableOpacity  onPress={() => setShowReport(!showReport)}
          style={className`bg-[#245AB0] w-[271px] h-[44px] flex items-center justify-center rounded-lg`}>
             <Text style={className`text-white`}>Pay Now</Text>

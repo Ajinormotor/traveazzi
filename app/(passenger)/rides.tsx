@@ -1,4 +1,4 @@
-import { Image, ImageBackground, ScrollView, StyleSheet,
+import { ActivityIndicator, Image, ImageBackground, ScrollView, StyleSheet,
      Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import className, { style } from 'twrnc'
@@ -12,7 +12,7 @@ import options from "../../assets/images/options.png"
 import { riderListData } from '@/constants/data/riderList'
 // import routes_arrow from "../assets/images/routes_arrow.png"
 import userOne from "../../assets/images/user_logo img (1).png"
-import { Link, useRouter } from 'expo-router'
+import { Link, useRouter, useLocalSearchParams } from 'expo-router'
 import { useAuthStore } from '@/store/authStore'
 import { useDriverRideStore } from '@/store/driverStore'
 
@@ -27,28 +27,23 @@ import trip from "../..//assets/images/no_trip.png"
 import Ionicons from '@expo/vector-icons/Ionicons'
 
 const Rides = () => {
-const [loading,setLoading] = useState<boolean >(true)
 const route = useRouter()
-
-useEffect(() => {
-    
-    const hideTimeout = setTimeout(() => {
-      setLoading(false);
-    }, 1000); 
-  
-    return () => {
-      clearTimeout(hideTimeout);
-    };
-  }, []);
+const { q } = useLocalSearchParams<{ q?: string }>()
+const query = typeof q === 'string' ? q.toLowerCase() : '';
 
 // const {logout} = useAuthStore()
-const {rides, getAllRides} = useDriverRideStore()
+const {rides, getAllRides, loading} = useDriverRideStore()
 
 useEffect(() => {
   getAllRides()
 },[])
 
-// console.log('All rides in rides:', rides)
+const searchResults = Array.isArray(rides) && query
+  ? rides.filter((r: any) => {
+      const haystack = `${r?.destinationAddress ?? ''} ${r?.originAddress ?? ''} ${r?.rider_name ?? ''}`.toLowerCase();
+      return haystack.includes(query);
+    })
+  : (Array.isArray(rides) ? rides : []);
   
 
 
@@ -76,6 +71,13 @@ useEffect(() => {
 
 </View>
 
+{
+  loading  && <View style={[className`flex-1`]}>
+
+    <ActivityIndicator  color="#fff" />
+  </View>
+}
+
 
 {
 
@@ -90,7 +92,7 @@ useEffect(() => {
    </TouchableOpacity>
 
       <View style={className`flex flex-row items-center justify-between`}>
-        <Text style={className`font-medium text-[16px]`}>Searching for available ride...</Text>
+        
 
         
             <TouchableOpacity>
@@ -100,10 +102,13 @@ useEffect(() => {
       </View>
 
       <View style={className`flex-1`}>
-      <Image  source={load} alt=''
-      className='flex-1 h-full w-full' />
+      {/* <Image  source={load} alt=''
+      className='flex-1 h-full w-full' /> */}
 
+
+    <ActivityIndicator  color="#245AB0" />
       </View>
+      
     </View>
 
   )
@@ -120,16 +125,18 @@ style={className`h-1/2 bg-white flex-col  rounded-t-[30px] py-4 px-3 gap-7`}  >
    </TouchableOpacity>
 
 
-<ScrollView
-showsVerticalScrollIndicator={false}
+{/* Header */}
+   <View style={className`flex flex-row items-center justify-between`}>
 
->
+        <View style={[className`flex flex-row items-center justify-center gap-2`]}>
 
+      
+        <Text style={className`font-medium text-[16px]`}>Available  ride</Text>
+     <View style={[className`bg-black flex items-center justify-center rounded-full w-5 h-5`]}>
+      <Text style={[className`text-white text-[12px]`]}>{searchResults.length}</Text>
+     </View>
 
-
-      <View style={className`flex flex-row items-center justify-between`}>
-        <Text style={className`font-medium text-[16px]`}>Available  ride...</Text>
-
+       </View>
         
      <TouchableOpacity
                           onPress={() => route.back()}>
@@ -139,14 +146,24 @@ showsVerticalScrollIndicator={false}
 
       </View>
 
-      <View style={className`flex flex-col gap-3`}>
-        {
-           rides && rides.length > 0  ?
 
-           
+
+<ScrollView
+showsVerticalScrollIndicator={false}
+
+>
+
+
+
+   
       <View style={className`flex flex-col gap-3`}>
         {
-           Array.isArray(rides)  &&  rides.map((r: any) => (
+           searchResults.length > 0  ?
+
+
+      <View style={className`flex flex-col gap-3`}>
+        {
+           searchResults.map((r: any) => (
 
     <View key={r._id}  style={className`flex flex-col gap-2`}>
 
@@ -159,7 +176,7 @@ showsVerticalScrollIndicator={false}
                               {r.vehicle.plateNumber}</Text>
                     </View>
                 <View>
-         <Text style={className`text-2xl text-[#008000]`}>NGN {r.pricePerSeat}</Text>
+         <Text style={className`text-2xl text-[#008000]`}>₦{r.pricePerSeat}</Text>
                         </View>
 
                     </View>
@@ -273,20 +290,8 @@ style={className`w-[361px] h-[46px] bg-[#245AB0] flex items-center justify-cente
   
   
       
-   {Array.isArray(rides) && (
-  (() => {
-    // Find if any ride is currently in progress
-    const activeRide = rides.find((r: any) => r.status === 'IN_PROGRESS');
+   {r.status === 'SCHEDULED' ? 'Continue Ride' : 'Request To Join'}
 
-    return (
-      <Text style={className`text-white text-[16px]`}>
-        {activeRide ? 'Continue Ride' : 'Request To Join'}
-      </Text>
-    );
-  })()
-)}
-
-         
 </TouchableOpacity>
 
 </View>
@@ -296,26 +301,14 @@ style={className`w-[361px] h-[46px] bg-[#245AB0] flex items-center justify-cente
           }
    </View>
             :
- <View style={className`flex-1 flex-col items-center justify-center min-h-[300px]`}>
-    <Image  source={trip}
-style={{}  }  />
-       <Text style={className`text-[#AAAAAA] text-2xl font-bold`}>No rides available</Text>
-
-       <TouchableOpacity  onPress={ () => route.push('/(passenger)/rides') }
-   
-       >
-
-        <Text    style={
-      className`text-blue-500 text-base`
-     } >
-  Home
-        </Text>
-     
-       
-       </TouchableOpacity>
+ <View style={className`flex-1 flex-col items-center justify-center min-h-[300px] gap-3`}>
+<Image source={trip} alt=''
+style={className`w-[120px] h-[120px]`}  />
+    <Text style={className`text-[#AAAAAA] text-[16px] font-bold`}>
+      {query ? `No rides found for "${q}"` : 'No rides available'}
+    </Text>
     </View>
 
-         
         }
       </View>
 
@@ -337,3 +330,24 @@ style={{}  }  />
 export default Rides
 
 const styles = StyleSheet.create({})
+
+
+
+
+
+//     <Image  source={trip}
+// style={{}  }  />
+//        <Text style={className`text-[#AAAAAA] text-2xl font-bold`}>No rides available</Text>
+
+//        <TouchableOpacity  onPress={ () => route.push('/(passenger)/rides') }
+   
+//        >
+
+//         <Text    style={
+//       className`text-blue-500 text-base`
+//      } >
+//   Home
+//         </Text>
+     
+       
+//        </TouchableOpacity>

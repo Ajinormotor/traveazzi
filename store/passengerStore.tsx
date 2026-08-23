@@ -3,8 +3,8 @@ import { useAuthStore } from "./authStore";
 import axios from "axios";
 import Toast from "react-native-toast-message";
 
-const Base_Url = "https://traveazi.onrender.com/api";
-axios.defaults.withCredentials = true;
+const Base_Url =
+  process.env.EXPO_PUBLIC_API_URL ?? "https://traveazi.onrender.com/api";
 
 
 interface RequestPayload {
@@ -15,10 +15,12 @@ interface RequestPayload {
 }
 
 interface PassengerState {
-  loading: boolean; 
+  loading: boolean;
   getAllBookings: () => Promise<any>;
   requestBookings: (payload: RequestPayload) => Promise<any>;
   getPassengerBookings: (id: string) => Promise<any>;
+  getMyBookings: () => Promise<any>;
+  submitRating: (bookingId: string, score: number, comment?: string) => Promise<any>;
   payBookings: (id: string) => Promise<any>;
   bookings: string[];
 }
@@ -26,6 +28,56 @@ interface PassengerState {
 export const usePassengerStore = create<PassengerState>((set) => ({
     loading: false,
     bookings: [],
+
+     getMyBookings: async () => {
+      set({ loading: true });
+      try {
+        const token = useAuthStore.getState().token;
+
+        const response = await axios.get(`${Base_Url}/passenger/bookings?order=DESC&limit=20`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const list = response.data?.data ?? [];
+        set({ bookings: list, loading: false });
+        return list;
+      } catch (error: any) {
+        console.error("Error fetching my bookings:", error?.response?.data || error);
+        set({ loading: false });
+        return [];
+      }
+    },
+
+    submitRating: async (bookingId, score, comment) => {
+      set({ loading: true });
+      try {
+        const token = useAuthStore.getState().token;
+
+        const response = await axios.post(`${Base_Url}/ratings`, { bookingId, score, comment }, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        set({ loading: false });
+        Toast.show({
+          type: "success",
+          text1: response.data?.message || "Thanks for rating your driver!",
+        });
+        return true;
+      } catch (error: any) {
+        console.error("Error submitting rating:", error?.response?.data || error);
+        Toast.show({
+          type: "error",
+          text1: error.response?.data?.message || "Failed to submit rating",
+        });
+        set({ loading: false });
+        return false;
+      }
+    },
 
      getAllBookings: async () => {
     set({ loading: true });

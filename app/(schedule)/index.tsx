@@ -111,7 +111,7 @@ const handleAvailability = () => {
      
      </TouchableOpacity>
 
-        <TouchableOpacity  onPress={() =>  route.push(`/searchResult`)}
+        <TouchableOpacity  onPress={() =>  route.push(`/scheduleResult`)}
         style={className`w-[361px] w-full h-[46px] bg-[#F6F6F6] rounded-[8px] w-full flex flex-row items-center 
        px-2  gap-3`}>
         <Ionicons name='search' color="black" size={20} style={className``}  />

@@ -130,7 +130,7 @@ style={className`flex flex-col gap-3`}
                             <Text>{item.plate_no}</Text>
                         </View>
                         <View>
-                 <Text style={className`text-2xl text-[#008000]`}>NGN {item.price}</Text>
+                 <Text style={className`text-2xl text-[#008000]`}>₦{item.price}</Text>
                         </View>
 
                     </View>

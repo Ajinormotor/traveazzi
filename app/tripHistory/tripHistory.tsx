@@ -132,7 +132,7 @@ style={className`flex flex-col gap-3 `}
 
       <View style={className`max-w-[40%] w-full bg-[#ECECEC] h-[2px]`}></View>
 
-      <Text style={className`text-[#008000] text-sm font-semibold `}> NGN{location.price} </Text>
+      <Text style={className`text-[#008000] text-sm font-semibold `}> ₦{location.price} </Text>
 
       </View>
 
@@ -162,7 +162,7 @@ style={className`flex flex-col gap-3 `}
           <View style={className`flex flex-col gap-3`}>
 
             <TouchableOpacity
-          onPress={() => route.push('/(offer)')}
+          onPress={() => route.push('/(driver)/create')}
             style={className`w-[361px] h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px]  `}>
                 <Text style={className`text-white text-[16px]`}>Offer a Ride</Text>
             </TouchableOpacity>

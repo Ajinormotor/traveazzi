@@ -1,5 +1,4 @@
 import {
-  Image,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
@@ -13,10 +12,6 @@ import className from "twrnc";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
 
-import apple from "../../assets/images/apple.png";
-import google from "../../assets/images/google.png";
-// import email from '../../assets/images/mail.png'
-import { useRoute } from "@react-navigation/native";
 import { useAuthStore } from "@/store/authStore";
 import { ActivityIndicator } from "react-native";
 
@@ -32,10 +27,8 @@ const Signup = () => {
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
 
-  console.log('token', token)
-
   const handleSubmit = async () => {
-    await createProfile({
+    const success = await createProfile({
       firstName,
       lastName,
       gender,
@@ -43,7 +36,9 @@ const Signup = () => {
       confirmPassword,
     });
 
-    router.push('/(auth)')
+    if (!success) return;
+
+    router.replace('/(auth)');
   };
 
   return (
@@ -128,7 +123,8 @@ const Signup = () => {
               >
                 <TextInput
                   placeholder="Password"
-                  maxLength={12}
+                  secureTextEntry
+                  autoCapitalize="none"
                   style={className`w-[60%]`}
                   value={password}
                   onChangeText={setPassword}
@@ -142,7 +138,8 @@ const Signup = () => {
               >
                 <TextInput
                   placeholder="Confirm Password"
-                  maxLength={12}
+                  secureTextEntry
+                  autoCapitalize="none"
                   style={className`w-[60%]`}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}

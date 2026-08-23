@@ -1,16 +1,13 @@
-import axios from "axios";
-// import { useRouter } from "expo-router";
-import { Alert } from "react-native";
 import Toast from "react-native-toast-message";
 import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
 
-const Base_Url = "https://traveazi.onrender.com/api";
-axios.defaults.withCredentials = true;
+const Base_Url =
+  process.env.EXPO_PUBLIC_API_URL ?? "https://traveazi.onrender.com/api";
 
 
 interface AuthStore {
+  isHydrated: boolean;
   userEmail: string | null;
   loading: boolean;
   token: any;
@@ -28,9 +25,12 @@ interface AuthStore {
   logout: () => Promise<any>;
   userProfile: () => Promise<any>;
   checkAuth: () => Promise<any>;
+  forgotPassword: (email: string) => Promise<boolean>;
+  resetPassword: (code: string, password: string) => Promise<boolean>;
 }
 
 export const useAuthStore = create<AuthStore>((set, get) => ({
+  isHydrated: false,
   userEmail: null,
   loading: false,
   token: null,
@@ -82,15 +82,13 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       if (data.success) {
         set({ loading: false, token: data?.data.partialToken });
         Toast.show({ type: "success", text1: data?.message || "Valid OTP" });
-        console.log("Token:", data?.data.partialToken);
         // router.push('/(auth)/signup')
         return true;
       }
 
       set({ loading: false });
       Toast.show({ type: "error", text1: "Invalid OTP" });
-
-      // return { statusCode: data?.statusCode};
+      return false;
     } catch (error) {
       set({ loading: false });
       Toast.show({ type: "error", text1: "Something went wrong" });
@@ -108,7 +106,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     set({ loading: true });
 
     const { token } = useAuthStore.getState();
-    console.log("Token:", token);
 
     try {
       if (!firstName || !lastName || !gender || !password || !confirmPassword) {
@@ -181,7 +178,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     });
 
     const data = await response.json();
-    console.log("LOGIN RAW RESPONSE:", data);
 
     // Remove old token
     await AsyncStorage.removeItem("token");
@@ -240,10 +236,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       });
 
       const data = await response.json()
-      if(await AsyncStorage.getItem('token')){
-        await AsyncStorage.removeItem("token")
-      }
-    
+
       if (response.ok && data?.success) {
         set({ loading: false, token: data?.data?.token?.accessToken, user: data?.data?.user  });
         Toast.show({ type: "success", text1: "Logged in" });
@@ -253,7 +246,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
         return true;
       } else {
-        set({ user: data?.user, token: data?.token?.accessToken, loading: false });
+        set({ loading: false });
         return false;
       }
     } catch (error: any) {
@@ -270,24 +263,90 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   logout: async () => {
     try {
-      const response = await fetch(`${Base_Url}/auth/email/send-otp`, {
+      await fetch(`${Base_Url}/auth/logout`, {
         method: "POST",
-        headers: { 
+        headers: {
           Authorization: `Bearer ${useAuthStore.getState().token}`,
           "Content-Type": "application/json" },
+      });
+    } catch (error) {
+      console.log("Logout request failed", error);
+    } finally {
+      // always clear local session, even if the server call failed
+      await AsyncStorage.multiRemove(["token", "user"]);
+      useAuthStore.setState({ token: null, user: null });
+    }
+  },
+
+  forgotPassword: async (email) => {
+    if (!email) {
+      Toast.show({ type: "error", text1: "Please enter your email" });
+      return false;
+    }
+
+    set({ loading: true });
+    try {
+      const response = await fetch(`${Base_Url}/auth/forgot-password`, {
+        method: "POST",
+        body: JSON.stringify({ email }),
+        headers: { "Content-Type": "application/json" },
       });
 
       const data = await response.json();
 
-    
-        Toast.show({ type: "success", text1: data?.message });
-        await AsyncStorage.removeItem("token");
-        await AsyncStorage.removeItem("user");
-             useAuthStore.setState({ token: null, user: null });
-      
+      if (response.ok && data?.success !== false) {
+        set({ userEmail: email, loading: false });
+        Toast.show({
+          type: "success",
+          text1: data?.message || "Reset code sent to your email",
+        });
+        return true;
+      }
+
+      set({ loading: false });
+      Toast.show({ type: "error", text1: data?.message || "Failed to send reset code" });
+      return false;
     } catch (error) {
-        console.log("Logout failed", error);
-           Toast.show({ type: "error", text1: 'An error occure'});
+      console.log("Forgot password error:", error);
+      set({ loading: false });
+      Toast.show({ type: "error", text1: "Something went wrong" });
+      return false;
+    }
+  },
+
+  resetPassword: async (code, password) => {
+    if (!code || !password) {
+      Toast.show({ type: "error", text1: "Please fill in all fields" });
+      return false;
+    }
+
+    set({ loading: true });
+    try {
+      const response = await fetch(`${Base_Url}/auth/reset-password`, {
+        method: "POST",
+        body: JSON.stringify({ code, password }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data?.success !== false) {
+        set({ loading: false });
+        Toast.show({
+          type: "success",
+          text1: data?.message || "Password updated. Please log in.",
+        });
+        return true;
+      }
+
+      set({ loading: false });
+      Toast.show({ type: "error", text1: data?.message || "Invalid or expired code" });
+      return false;
+    } catch (error) {
+      console.log("Reset password error:", error);
+      set({ loading: false });
+      Toast.show({ type: "error", text1: "Something went wrong" });
+      return false;
     }
   },
 
@@ -300,6 +359,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       set({ token, user });
     } catch (error) {
       console.log("Auth check failed", error);
+    } finally {
+      set({ isHydrated: true });
     }
   },
 

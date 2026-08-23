@@ -15,6 +15,7 @@ const DriverLayout = () => {
              <Stack.Screen name='vehicle'  />
      <Stack.Screen name='addVehicle'  />
      <Stack.Screen name='create'  />
+           <Stack.Screen name='profile'  />
           <Stack.Screen name='[id]/startRide'  />
               <Stack.Screen name='manageRide/[id]'  />
           <Stack.Screen name='destination'  />

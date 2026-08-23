@@ -21,6 +21,7 @@ import { Link, router, useRouter } from "expo-router";
 import { useAuthStore } from "@/store/authStore";
 import { useDriverRideStore } from "@/store/driverStore";
 import { getStatusColor } from "@/constants/statusColor";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 
 const History = () => {
@@ -63,42 +64,21 @@ const History = () => {
 
           {/* Header */}
           <View style={className`flex flex-row items-center justify-between`}>
+
             <View style={className`flex flex-row items-center gap-2 relative`}>
               <Text style={className`text-black text-2xl font-bold`}>
                 Trip History
               </Text>
 
-              <TouchableOpacity onPress={handleToggle}>
-                <Image source={down} style={className`w-[12px] h-[7px]`} />
-              </TouchableOpacity>
-
-              {showMenu && (
-                <View
-                  style={className`
-                    absolute top-10 left-0 bg-white rounded-[8px] shadow-sm p-2 gap-3 
-                    items-center justify-center flex-col w-full z-100
-                  `}
-                >
-                  <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
-                    <Link href="/(passenger)" style={className`border-b border-gray-200`}>
-                      <Text>Home</Text>
-                    </Link>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity onPress={handleLogout}>
-                    
-                    <Text style={className`text-red-500 font-bold`}>
-                      Logout
-                    </Text>
-
-                  </TouchableOpacity>
-                </View>
-              )}
+            
             </View>
 
-            <TouchableOpacity onPress={() => route.back()}>
-              <Image source={cancel} style={className`w-[20px] h-[20px] hidden`} />
-            </TouchableOpacity>
+             <TouchableOpacity
+                          onPress={() => route.back()}>
+                        {/* <Image source={cancel} style={className`w-[20px] h-[20px]`} /> */}
+                           <Ionicons name="arrow-undo-circle-outline"  size={20} />
+                      </TouchableOpacity>
+
           </View>
 
    
@@ -114,7 +94,7 @@ const History = () => {
                   {rides.map((rider: any) => (
                     <TouchableOpacity
                       key={rider._id}
-                      onPress={() => router.push(`/${rider._id}/startRide`)}
+                      // onPress={() => router.push(`/${rider._id}/startRide`)}
                     >
                       <View
                         style={className`border border-[#EBEBEB] rounded-[8px] bg-white`}
@@ -166,7 +146,7 @@ const History = () => {
                             <Text
                               style={className`text-[#008000] text-sm font-semibold`}
                             >
-                              NGN {rider.pricePerSeat}
+                              ₦{rider.pricePerSeat}
                             </Text>
                           </View>
 
