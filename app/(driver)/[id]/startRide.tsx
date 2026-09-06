@@ -186,14 +186,14 @@ style={className`flex flex-col gap-3  `}>
   `}>
     <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
       <Link href="/vehicle"
-      style={className`border-b-1 border-gray-200`}>
+      style={className`border-b border-gray-200`}>
       <Text>Vehicle</Text>
        </Link>
     </TouchableOpacity>
 
         <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
       <Link href="/vehicle"
-      style={className`border-b-1 border-gray-200`}>
+      style={className`border-b border-gray-200`}>
       <Text> Profile </Text>
        </Link>
     </TouchableOpacity>

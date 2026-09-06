@@ -14,7 +14,7 @@ const PassengerLayout = () => {
    <Stack.Screen name='index' />
   <Stack.Screen name='home'  />
    <Stack.Screen name='rides'  />
-      <Stack.Screen name='histroy'  />
+      <Stack.Screen name='history'  />
             <Stack.Screen name='profile'  />
          <Stack.Screen name='favoritesDriver'  />
    <Stack.Screen name='confirmRide/[id]'  />  

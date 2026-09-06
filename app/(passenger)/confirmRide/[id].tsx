@@ -49,7 +49,7 @@ useEffect(() => {
   fetchingSingleRide();
 }, [id, singleRides]);
 
-if (!rideDetails) return <View style={[className`flex-1 items-center justify-center`]}> <ActivityIndicator size={40}  color="#000"  /></View>; 
+if (!rideDetails) return <View style={[className`flex-1 items-center justify-center`]}><ActivityIndicator size={40}  color="#000"  /></View>; 
 
 const item = rideDetails;
 // console.log('Ride details:', item);

@@ -97,7 +97,7 @@ style={className`h-[85%] bg-[#FAFAFA] flex-col flex rounded-t-[30px]  gap-7 p-1`
   `}>
     <TouchableOpacity>
       <Link href="/(driver)"
-      style={className`rder-b-1 border-gray-200`}>
+      style={className`border-b border-gray-200`}>
       <Text>Home</Text>
        </Link>
     </TouchableOpacity>

@@ -85,7 +85,7 @@ const handleSubmit = async () => {
 {/* First Name */}
          <View 
 style={className`bg-[#F0F0F0] h-[46px] w-full rounded-[8px] 
-          flex flex-row items-center p-1 gap-3 outline-none`}>
+          flex flex-row items-center p-1 gap-3`}>
             <TextInput
         placeholder='Email'
         style={className`w-[60%]`}
@@ -98,7 +98,7 @@ style={className`bg-[#F0F0F0] h-[46px] w-full rounded-[8px]
         </View>
 
               <View style={className`bg-[#F0F0F0] h-[46px] w-full rounded-[8px] flex flex-row
-                 items-center p-1 gap-3 outline-none`}>
+                 items-center p-1 gap-3`}>
             <TextInput
             placeholder='Password'
             secureTextEntry

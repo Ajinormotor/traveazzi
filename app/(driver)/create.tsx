@@ -301,7 +301,7 @@ if (!combinedDate.isValid()) {
                   <TextInput
                     placeholder="Pick up address"
                     style={className`max-w-[85%] w-full bg-transparent text-[16px]
-                      outline-none`}
+                     `}
                     value={originAddress}
                     onChangeText={setOriginAddress}
                   />
@@ -318,7 +318,7 @@ if (!combinedDate.isValid()) {
                     value={destinationAddress}
                     onChangeText={setDestinationAddress}
                     style={className`max-w-[80%] w-full bg-transparent 
-                      text-[16px]  outline-none`}
+                      text-[16px] `}
                   />
                   <Image source={dropIcon} />
                 </TouchableOpacity>
@@ -378,7 +378,7 @@ if (!combinedDate.isValid()) {
                         placeholder={currentDate}
                         value={departureDate}
                         onChangeText={setDepartureDate}
-                        style={className`flex-1 ml-2 outline-none`}
+                        style={className`flex-1 ml-2`}
                       />
                     </View>
                   </View>
@@ -393,7 +393,7 @@ if (!combinedDate.isValid()) {
                         placeholder="09:00 AM"
                         value={departureTime}
                         onChangeText={setDepartureTime}
-                        style={className`flex-1 ml-2   outline-none`}
+                        style={className`flex-1 ml-2  `}
                       />
                     </View>
                   </View>

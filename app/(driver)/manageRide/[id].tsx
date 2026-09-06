@@ -254,7 +254,7 @@ style={className`flex flex-col gap-3`}
             `}
           >
             <TouchableOpacity onPress={() => handleComplete(booking._id) }>
-              <View style={className`border-b-1 border-gray-200`}>
+              <View style={className`border-b border-gray-200`}>
                 <Text>
 
                   Complete Ride</Text>

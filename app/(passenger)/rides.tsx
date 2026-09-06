@@ -290,7 +290,9 @@ style={className`w-[361px] h-[46px] bg-[#245AB0] flex items-center justify-cente
   
   
       
+    <Text style={className`text-white text-[16px]`}>
    {r.status === 'SCHEDULED' ? 'Continue Ride' : 'Request To Join'}
+    </Text>
 
 </TouchableOpacity>
 

@@ -65,7 +65,7 @@ const Forgotpassword = () => {
                 {/* Email */}
                 <View
                   style={className`bg-[#F0F0F0] h-[46px] w-full rounded-[8px]
-                    flex flex-row items-center p-1 gap-3 outline-none`}
+                    flex flex-row items-center p-1 gap-3`}
                 >
                   <TextInput
                     placeholder="Email"
@@ -94,7 +94,7 @@ const Forgotpassword = () => {
                 {/* Reset code */}
                 <View
                   style={className`bg-[#F0F0F0] h-[46px] w-full rounded-[8px]
-                    flex flex-row items-center p-1 gap-3 outline-none`}
+                    flex flex-row items-center p-1 gap-3`}
                 >
                   <TextInput
                     placeholder="Reset code"
@@ -109,7 +109,7 @@ const Forgotpassword = () => {
                 {/* New password */}
                 <View
                   style={className`bg-[#F0F0F0] h-[46px] w-full rounded-[8px]
-                    flex flex-row items-center p-1 gap-3 outline-none`}
+                    flex flex-row items-center p-1 gap-3`}
                 >
                   <TextInput
                     placeholder="New password"
