@@ -1,6 +1,7 @@
-import { Image, ImageBackground, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import React, { useState } from 'react'
 import className from 'twrnc'
+import MapEmbed from '@/components/MapEmbed';
 import bg from "../../assets/images/map_bg.png"
 // import  Ionicons from "@expo/vector-icons/Ionicons"
 // import down from "../assets/images/down.png"
@@ -19,10 +20,8 @@ const PassengerIndex = () => {
     const [showSearch, setShowSearch] = useState<boolean | null>(true);
 
   return (
-    <ImageBackground
-    source={bg} alt=''
-    style={className`flex-1 `}
-    >
+    <View style={className`flex-1 `}>
+    <MapEmbed mode="view" fallback={bg} />
 <View style={className`h-1/2 relative `}>
 
 <TouchableOpacity style={className`absolute left-[50px] bottom-[50px]`} >
@@ -51,7 +50,7 @@ style={className`h-1/2 bg-white flex-col  rounded-t-[30px] py-4 px-3 gap-7`}  >
         </View>
    </ScrollView>
     
-    </ImageBackground>
+    </View>
   )
 }
 

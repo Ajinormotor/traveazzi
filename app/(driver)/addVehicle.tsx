@@ -1,9 +1,10 @@
-import { Dimensions, FlatList, Image, ImageBackground,
+import { Dimensions, FlatList, Image,
    KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, 
    ActivityIndicator,
   TouchableOpacity, useWindowDimensions, View } from 'react-native'
 import React, { useState } from 'react'
 import className from 'twrnc'
+import MapEmbed from '@/components/MapEmbed';
 
 
 // import cancel from "../../assets/images/cancel.png"
@@ -126,10 +127,8 @@ const handleAddVehicle = async () => {
     >
 
 
-     <ImageBackground
-    source={bg} alt=''
-    style={className`flex-1 `}
-    >
+     <View style={className`flex-1 `}>
+     <MapEmbed mode="view" fallback={bg} />
 
         <View style={className`h-[30%] relative `}>
 
@@ -373,7 +372,7 @@ showsHorizontalScrollIndicator={false}
 </ScrollView>
 
 </View>
-        </ImageBackground>
+        </View>
 
     </KeyboardAvoidingView>
   )

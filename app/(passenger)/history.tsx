@@ -1,6 +1,5 @@
 import {
   Image,
-  ImageBackground,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -10,6 +9,7 @@ import {
 import React, { useEffect, useState } from "react";
 import bg from "../../assets/images/map_bg.png";
 import className from "twrnc";
+import MapEmbed from '@/components/MapEmbed';
 import marker from "../../assets/images/marker.png";
 import down from "../../assets/images/down.png";
 import indicator from "../../assets/images/indicator.png";
@@ -45,7 +45,8 @@ const History = () => {
 
 
   return (
-    <ImageBackground source={bg} style={className`flex-1`}>
+    <View style={className`flex-1`}>
+    <MapEmbed mode="view" fallback={bg} />
       {/* Map section */}
       <View style={className`h-[15%] relative`}>
         <TouchableOpacity style={className`absolute left-[50px] bottom-[50px]`}>
@@ -183,7 +184,7 @@ const History = () => {
 
       </View>
 
-    </ImageBackground>
+    </View>
   );
 }
 

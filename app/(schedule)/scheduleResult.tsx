@@ -1,6 +1,7 @@
-import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import className, { style } from 'twrnc'
+import MapEmbed from '@/components/MapEmbed';
 import bg from "../../assets/images/map_bg.png"
 import marker from "../../assets/images/marker.png"
 import directions from "../../assets/images/navigation-03.png"
@@ -34,10 +35,8 @@ const [ scheduled, setScheduled] = useState(false)
 
   return (
 
-      <ImageBackground
-        source={bg} alt=''
-        style={className`flex-1 `}
-        >
+      <View style={className`flex-1 `}>
+      <MapEmbed mode="view" fallback={bg} />
 
 <View style={className`h-[30%] relative `}>
 
@@ -245,7 +244,7 @@ style={className`w-[361px] h-[46px] bg-[#245AB0] flex items-center justify-cente
 
 }
 
-        </ImageBackground>
+        </View>
 
   )
 }

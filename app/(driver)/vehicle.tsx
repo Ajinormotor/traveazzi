@@ -1,9 +1,10 @@
-import { Image, ImageBackground, ScrollView, StyleSheet,
+import { Image, ScrollView, StyleSheet,
      Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 
 import bg from "../../assets/images/map_bg.png"
 import className, { style } from 'twrnc'
+import MapEmbed from '@/components/MapEmbed';
 import marker from "../../assets/images/marker.png"
 import down from "../../assets/images/down.png"
 
@@ -52,10 +53,8 @@ const handleLogout = async() => {
   route.push('/(auth)')
 }
   return (
-   <ImageBackground
-    source={bg} alt=''
-    style={className`flex-1 `}
-    >
+   <View style={className`flex-1 `}>
+   <MapEmbed mode="view" fallback={bg} />
 
 <View style={className`h-[15%] relative `}>
 
@@ -196,7 +195,7 @@ style={className`h-[85%] bg-[#FAFAFA] flex-col flex rounded-t-[30px]  gap-7 p-1`
 
 </View>
 
-</ImageBackground>
+</View>
 
   )
 }

@@ -1,7 +1,8 @@
-import { ActivityIndicator, Dimensions, FlatList, Image, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, 
+import { ActivityIndicator, Dimensions, FlatList, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, 
   TouchableOpacity, useWindowDimensions, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import className from 'twrnc'
+import MapEmbed from '@/components/MapEmbed';
 
 
 import cancel from "../../assets/images/cancel.png"
@@ -254,7 +255,8 @@ if (!combinedDate.isValid()) {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <ImageBackground source={bg} style={className`flex-1`}>
+      <View style={className`flex-1`}>
+      <MapEmbed mode="view" fallback={bg} />
         <View style={className`h-[30%] relative`}>
           <TouchableOpacity style={className`absolute left-[50px] bottom-[50px]`}>
             <Image source={marker} style={className`w-[100px] h-[100px]`} />
@@ -535,7 +537,7 @@ if (!combinedDate.isValid()) {
           </ScrollView>
 
         </View>
-      </ImageBackground>
+      </View>
     </KeyboardAvoidingView>
   );
 };

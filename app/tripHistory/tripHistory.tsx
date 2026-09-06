@@ -1,8 +1,9 @@
-import { Image, ImageBackground, ScrollView, StyleSheet,
+import { Image, ScrollView, StyleSheet,
      Text, TouchableOpacity, View } from 'react-native'
 import React, { useState } from 'react'
 import bg from "../../assets/images/map_bg.png"
 import className, { style } from 'twrnc'
+import MapEmbed from '@/components/MapEmbed';
 import marker from "../../assets/images/marker.png"
 import down from "../../assets/images/down.png"
 import { riderlist, riderListData } from '@/constants/data/riderList'
@@ -29,10 +30,8 @@ const handleTitle = (title : string) => {
 }
 
   return (
-   <ImageBackground
-    source={bg} alt=''
-    style={className`flex-1 `}
-    >
+   <View style={className`flex-1 `}>
+   <MapEmbed mode="view" fallback={bg} />
 
 <View style={className`h-[15%] relative `}>
 
@@ -183,7 +182,7 @@ style={className`flex flex-col gap-3 `}
   
     </View>
 
-    </ImageBackground>
+    </View>
   )
 }
 
