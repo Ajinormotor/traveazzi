@@ -94,7 +94,9 @@ import Toast from 'react-native-toast-message';
               {[...Array(6)].map((_, index) => (
                 <TextInput
                   key={index}
-                  ref={(ref) => (inputs.current[index] = ref)}
+                  ref={(ref) => {
+                    inputs.current[index] = ref;
+                  }}
                   style={className`w-[46px] h-[46px] rounded-[8px] bg-[#F0F0F0] text-center text-[18px]`}
                   keyboardType="numeric"
                   maxLength={1}

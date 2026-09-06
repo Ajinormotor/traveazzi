@@ -48,7 +48,7 @@ export default BrandSplash
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: 999,
     elevation: 999,
     backgroundColor: '#245AB0',
