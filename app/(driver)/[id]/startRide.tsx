@@ -1,8 +1,9 @@
-import { ActivityIndicator, Dimensions, Image, ImageBackground, ScrollView, StyleSheet,
+import { ActivityIndicator, Dimensions, Image, ScrollView, StyleSheet,
      Text, TextInput, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import bg from "../../../assets/images/map_bg.png"
 import className, { style } from 'twrnc'
+import MapEmbed from '@/components/MapEmbed';
 import marker from "../../../assets/images/marker.png"
 import down from "../../../assets/images/down.png"
 import indicator from "../../../assets/images/indicator.png"
@@ -121,11 +122,8 @@ const handleAccept = async(id: string) => {
 
 
   return (
-<ImageBackground
-  source={bg}
-  alt=""
-  style={[className`flex-1`, { width }]}
->
+<View style={[className`flex-1`, { width }]}>
+<MapEmbed mode="directions" origin={data?.originAddress} destination={data?.destinationAddress} fallback={bg} />
 
 
         <View style={className`h-[20%] relative `}>
@@ -427,7 +425,7 @@ style={className`flex flex-col gap-3  `}>
 
     </View>
 
-    </ImageBackground>
+    </View>
   )
 }
 

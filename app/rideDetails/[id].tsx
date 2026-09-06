@@ -1,7 +1,8 @@
-import { Image, ImageBackground, ScrollView, StyleSheet,
+import { Image, ScrollView, StyleSheet,
      Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
 import className, { style } from 'twrnc'
+import MapEmbed from '@/components/MapEmbed';
 import bg from "../../assets/images/map_bg.png"
 import marker from "../../assets/images/marker.png"
 import indicator from "../../assets/images/indicator.png"
@@ -45,10 +46,8 @@ if(!item){
 
   return (
  
-    <ImageBackground
-    source={bg} alt=''
-    style={className`flex-1 `}
-    >
+    <View style={className`flex-1 `}>
+    <MapEmbed mode="directions" origin={item?.location_details?.[0]?.first_direction} destination={item?.location_details?.[item.location_details.length - 1]?.first_direction} fallback={bg} />
 
 <View style={className`h-[15%] relative `}>
 
@@ -278,7 +277,7 @@ style={className`flex flex-col gap-3`}
 
 </View>
 
-        </ImageBackground>
+    </View>
 
 
 

@@ -1,9 +1,10 @@
-import { ActivityIndicator, Image, ImageBackground, ScrollView, StyleSheet, Text, TextInput,
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TextInput,
      TouchableOpacity, View } from  'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { riderListData } from '@/constants/data/riderList'
 import className, { style } from 'twrnc'
+import MapEmbed from '@/components/MapEmbed';
 
 import transit_bg from "../../../assets/images/bg_map_ongoing.png"
 import indicator from "../../../assets/images/indicator.png"
@@ -83,10 +84,8 @@ const handlePay = async () => {
 };
 
   return (
-    <ImageBackground
-    source={transit_bg} alt=''
-    style={className`flex-1 `}
-    >
+    <View style={className`flex-1 `}>
+    <MapEmbed mode="directions" origin={item?.originAddress} destination={item?.destinationAddress} fallback={transit_bg} />
 
 
 <View style={className`h-[30%] relative `}>
@@ -408,9 +407,9 @@ style={className`flex flex-col gap-3`}
                 </View>
 
 </ScrollView>
-   </View>
+    </View>
 
-        </ImageBackground>
+        </View>
   )
 }
 
