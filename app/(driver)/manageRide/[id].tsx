@@ -2,7 +2,6 @@ import { Image, ScrollView, StyleSheet, Text,
      TouchableOpacity, View } from  'react-native'
 import React, { useEffect, useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { riderListData } from '@/constants/data/riderList'
 import className, { style } from 'twrnc'
 import MapEmbed from '@/components/MapEmbed';
 import transit_bg from "../../../assets/images/bg_map_ongoing.png"

@@ -9,7 +9,6 @@ import marker from "../../assets/images/marker.png"
 import down from "../../assets/images/down.png"
 
 import { useRouter } from 'expo-router'
-import { vehicelData } from '@/constants/data/vehicle'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import options from "../../assets/images/options.png"
 import indicator from "../../assets/images/indicator.png"

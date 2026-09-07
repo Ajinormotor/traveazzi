@@ -10,7 +10,6 @@ import indicator from "../../assets/images/indicator.png"
 import cancel from "../../assets/images/cancel.png"
 import load from "../../assets/images/available drivers.png"
 import options from "../../assets/images/options.png"
-import { riderListData } from '@/constants/data/riderList'
 // import routes_arrow from "../assets/images/routes_arrow.png"
 import userOne from "../../assets/images/user_logo img (1).png"
 import { Link, useRouter, useLocalSearchParams } from 'expo-router'

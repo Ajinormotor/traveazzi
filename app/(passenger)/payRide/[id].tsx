@@ -2,7 +2,6 @@ import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TextInput,
      TouchableOpacity, View } from  'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { riderListData } from '@/constants/data/riderList'
 import className, { style } from 'twrnc'
 import MapEmbed from '@/components/MapEmbed';
 

@@ -220,7 +220,7 @@ style={className`w-[361px] h-[46px] bg-[#245AB0] flex items-center justify-cente
 :
 
 <TouchableOpacity
- onPress={() => route.push({pathname: "/rideDetails/[id]", params: {id: r.id}})}
+ onPress={() => route.push({pathname: "/(passenger)/confirmRide/[id]", params: {id: r.id}})}
 style={className`w-[361px] h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px]  `}>
     <Text style={className`text-white text-[16px]`}>Request To Join</Text>
 </TouchableOpacity>

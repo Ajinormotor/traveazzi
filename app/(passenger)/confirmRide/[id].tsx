@@ -7,7 +7,6 @@ import bg from "../../../assets/images/map_bg.png"
 import marker from "../../../assets/images/marker.png"
 import indicator from "../../../assets/images/indicator.png"
 import { useLocalSearchParams, useRouter, useSearchParams } from 'expo-router/build/hooks'
-import { riderListData } from '@/constants/data/riderList'
 import cancel from "../../../assets/images/cancel.png"
 import receipt from "../../../assets/images/reciept.png"
 import options from "../../../assets/images/options.png"
