@@ -141,6 +141,12 @@ const DriverIndex = () => {
                     </Link>
                   </TouchableOpacity>
 
+                  <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
+                    <Link href="/(driver)/profile" style={className`border-b border-gray-200`}>
+                      <Text>Profile</Text>
+                    </Link>
+                  </TouchableOpacity>
+
                   <TouchableOpacity onPress={handleLogout}>
                     <Text style={className`text-red-500 font-bold`}>
                       Logout

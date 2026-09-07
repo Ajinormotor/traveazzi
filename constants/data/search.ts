@@ -2,6 +2,7 @@ import scheduled from "../../assets/images/scheduled.png"
 import saved from "../../assets/images/saved.png"
 import trip from "../../assets/images/trip.png"
 import favorites from "../../assets/images/favorites.png"
+import user from "../../assets/images/user.png"
 
 export const searchData = [
     {    id: '1',
@@ -32,10 +33,17 @@ export const searchData = [
         path: '/(passenger)/history',
     },
 
-    // {    id: '3',
-    //     img: favorites,
-    //     title: 'Favorites Drivers',
-    //     subtitle: 'Reconnect with drivers you enjoyed traveling with.',
-    //       path: '/(passenger)/favoriteDrivers',
-    // },
+    {    id: '4',
+        img: favorites,
+        title: 'Favorite Drivers',
+        subtitle: 'Reconnect with drivers you enjoyed traveling with.',
+        path: '/(passenger)/favoritesDriver',
+    },
+
+    {    id: '5',
+        img: user,
+        title: 'Profile',
+        subtitle: 'View and manage your account.',
+        path: '/(passenger)/profile',
+    },
 ]
