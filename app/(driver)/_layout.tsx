@@ -1,11 +1,21 @@
 import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-import { Stack } from 'expo-router'
+import { Stack, useRouter } from 'expo-router'
 import SafeScreen from '@/components/SafeScreen'
+import { useAuthStore } from '@/store/authStore'
 
 
 const DriverLayout = () => {
+  const router = useRouter()
+  const { user, token } = useAuthStore()
+
+  useEffect(() => {
+    if (!user || !token) return; // unauthenticated: root guard handles /(auth) redirect
+    if (user?.roles?.[0]?.name !== 'DRIVER') {
+      router.replace('/(passenger)/home')
+    }
+  }, [user, token, router])
   return (
 <SafeAreaProvider>
 

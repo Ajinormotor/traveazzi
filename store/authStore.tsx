@@ -21,6 +21,7 @@ interface AuthStore {
     gender: string;
     password: string;
     confirmPassword: string;
+    portalType: "DRIVER" | "PASSENGER";
   }) => Promise<any>;
   logout: () => Promise<any>;
   userProfile: () => Promise<any>;
@@ -102,6 +103,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     gender,
     password,
     confirmPassword,
+    portalType,
   }) => {
     set({ loading: true });
 
@@ -128,7 +130,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
            password,
            country: "Nigeria", 
       termsAccepted: true,
-      portalType: "DRIVER" }),
+      portalType }),
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",

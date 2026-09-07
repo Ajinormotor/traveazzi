@@ -26,6 +26,7 @@ const Signup = () => {
   const [gender, setGender] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [portalType, setPortalType] = useState<"DRIVER" | "PASSENGER">("PASSENGER");
 
   const handleSubmit = async () => {
     const success = await createProfile({
@@ -34,6 +35,7 @@ const Signup = () => {
       gender,
       password,
       confirmPassword,
+      portalType,
     });
 
     if (!success) return;
@@ -144,6 +146,42 @@ const Signup = () => {
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                 />
+              </View>
+
+              {/* Role selector */}
+              <View style={className`flex flex-row gap-3`}>
+                <TouchableOpacity
+                  onPress={() => setPortalType("PASSENGER")}
+                  style={className`flex-1 h-[46px] rounded-[8px] flex items-center justify-center ${
+                    portalType === "PASSENGER"
+                      ? "bg-[#245AB0]"
+                      : "bg-[#F0F0F0]"
+                  }`}
+                >
+                  <Text
+                    style={className`text-[16px] ${
+                      portalType === "PASSENGER"
+                        ? "text-white"
+                        : "text-black"
+                    }`}
+                  >
+                    Passenger
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setPortalType("DRIVER")}
+                  style={className`flex-1 h-[46px] rounded-[8px] flex items-center justify-center ${
+                    portalType === "DRIVER" ? "bg-[#245AB0]" : "bg-[#F0F0F0]"
+                  }`}
+                >
+                  <Text
+                    style={className`text-[16px] ${
+                      portalType === "DRIVER" ? "text-white" : "text-black"
+                    }`}
+                  >
+                    Driver
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
 
