@@ -382,7 +382,7 @@ Read the file first (required). Replace ONLY the two address `TextInput` element
 />
 ```
 
-and the destination equivalent with its own value/setter/placeholder. Preserve each input's exact current `style` by passing it as `inputStyle` (read the current style props and copy them verbatim into `inputStyle={...}`). Keep all siblings (gps icons, wrapping `TouchableOpacity`s, `onSubmitEditing`) and every other line byte-identical. Add `import AddressAutocomplete from '@/components/AddressAutocomplete';` with the other imports.
+and the destination equivalent with its own value/setter/placeholder. Preserve each input's exact current `style` by passing it as `inputStyle` (read the current style props and copy them verbatim into `inputStyle={...}`). Keep all siblings (gps icons, wrapping `TouchableOpacity`s) and every other line byte-identical, with one granted exception: the destination field's `onSubmitEditing={handleSearch}` is dropped because `handleSearch` (`app/(schedule)/index.tsx:52-54`) is an empty no-op — dropping it changes no behavior, and extending the shared component is out of scope. Add `import AddressAutocomplete from '@/components/AddressAutocomplete';` with the other imports.
 
 - [ ] **Step 2: Create inputs (`app/(driver)/create.tsx`)**
 
