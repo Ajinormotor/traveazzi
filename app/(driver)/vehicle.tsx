@@ -30,10 +30,19 @@ export interface VehiclePayload {
 const Vehicle = () => {
 const route = useRouter()
 
-const { allVehicle , vehicles, loading} = useDriverRideStore()
+const { allVehicle , vehicles} = useDriverRideStore()
+const [isLoading, setIsLoading] = useState(false)
 
 useEffect(() => {
-    allVehicle()
+    const fetchVehicles = async () => {
+      setIsLoading(true);
+      try {
+        await allVehicle()
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchVehicles()
 }, [])
 
 
@@ -129,7 +138,7 @@ style={className`h-[85%] bg-[#FAFAFA] flex-col flex rounded-t-[30px]  gap-7 p-1`
     
 {/* Car Details */}
     
-{loading ? (
+{isLoading ? (
   <View style={className`flex-1 items-center justify-center py-10`}>
     <ActivityIndicator size={30} color="black" />
   </View>
@@ -188,7 +197,7 @@ style={className`h-[85%] bg-[#FAFAFA] flex-col flex rounded-t-[30px]  gap-7 p-1`
 </View>
 )}
 
-{!loading && Array.isArray(vehicles) && vehicles.length === 0 && (
+{!isLoading && Array.isArray(vehicles) && vehicles.length === 0 && (
   <View style={className`flex-1 items-center justify-center`}>
        <Text style={className`text-[#AAAAAA] text-2xl font-bold`}>
         No vehicle please add a vehicle

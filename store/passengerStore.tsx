@@ -19,7 +19,7 @@ interface PassengerState {
   getAllBookings: () => Promise<any>;
   requestBookings: (payload: RequestPayload) => Promise<any>;
   getPassengerBookings: (id: string) => Promise<any>;
-  getMyBookings: () => Promise<any>;
+  getMyBookings: (options?: { silent?: boolean }) => Promise<any>;
   submitRating: (bookingId: string, score: number, comment?: string) => Promise<any>;
   payBookings: (id: string) => Promise<any>;
   bookings: string[];
@@ -29,7 +29,7 @@ export const usePassengerStore = create<PassengerState>((set) => ({
     loading: false,
     bookings: [],
 
-     getMyBookings: async () => {
+     getMyBookings: async (options) => {
       set({ loading: true });
       try {
         const token = useAuthStore.getState().token;
@@ -45,10 +45,14 @@ export const usePassengerStore = create<PassengerState>((set) => ({
         return list;
       } catch (error: any) {
         console.error("Error fetching my bookings:", error?.response?.data || error);
-        Toast.show({
-          type: "error",
-          text1: "Failed to fetch bookings",
-        });
+        // polled callers (e.g. transitRide's 5s loop) pass silent so a
+        // transient failure doesn't spam toasts; one-shot callers still surface it
+        if (!options?.silent) {
+          Toast.show({
+            type: "error",
+            text1: "Failed to fetch bookings",
+          });
+        }
         set({ loading: false });
         return [];
       }

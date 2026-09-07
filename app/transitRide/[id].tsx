@@ -65,7 +65,8 @@ useEffect(() => {
     let cancelled = false;
 
     const poll = async () => {
-        const list = await getMyBookings();
+        // silent: this runs every 5s, so a transient failure must not toast-spam
+        const list = await getMyBookings({ silent: true });
         if (cancelled || !Array.isArray(list)) return;
 
         const match =

@@ -104,11 +104,9 @@ const handleAddVehicle = async () => {
 
   try {
     const ok = await addVehicle(payload);
+    // error toast is shown by the store with the readable server message;
+    // gate side effects on success without firing a second toast
     if (!ok) {
-      Toast.show({
-        type: "error",
-        text1: "Something went wrong",
-      });
       return;
     }
     // Clear all form fields

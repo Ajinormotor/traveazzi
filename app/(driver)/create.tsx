@@ -107,13 +107,6 @@ const handleConfirm = (date: any) => {
 
 
 const handleCreateRide = async () => {
-  // Test point 1
-  // Toast.show({
-  //   type: 'success',
-  //   text1: 'Clicked one',
-  // });
-  console.log("Hello one");
-
   // Validate required fields
   if (
     !originAddress ||
@@ -178,7 +171,6 @@ if (!combinedDate.isValid()) {
   //   type: 'success',
   //   text1: 'Clicked two',
   // });
-  console.log("Hello two");
 
   const payload = {
     vehicleId,

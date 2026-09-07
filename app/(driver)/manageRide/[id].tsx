@@ -18,10 +18,9 @@ const ManageRides = () => {
 
 
   const {id} = useLocalSearchParams()
-  console.log('Manage Ride id:', id)
 
 
- const {rides} = useDriverRideStore()  
+  const {rides} = useDriverRideStore()  
  const data =  rides.find((ride: any) => ride._id === id) 
 //  console.log('Manage Ride data:', data)
 
@@ -89,8 +88,6 @@ useEffect(() => {
 
     fetchPassengerRides(id); 
   }, [id, rides]);
-
-  console.log('Manage Passenger User:', passengerUser);
 
   return (
     <View style={className`flex-1 `}>
