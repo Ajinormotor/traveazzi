@@ -1,7 +1,9 @@
-import { Dimensions, FlatList, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, 
+import { Dimensions, FlatList, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, 
   TouchableOpacity, useWindowDimensions, View } from 'react-native'
 import React, { useState } from 'react'
 import className from 'twrnc'
+import dayjs from 'dayjs'
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 import MapEmbed from '@/components/MapEmbed';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 
@@ -30,8 +32,10 @@ const width = Dimensions.get('window').width;
 
 const Schedule = () => {
 
-const [selectedDate, setSelectedDate] = useState('');
-const [selectedTime, setSelectedTime] = useState('');
+const [rideDate, setRideDate] = useState<Date | null>(null);
+const [rideTime, setRideTime] = useState<Date | null>(null);
+const [showDatePicker, setShowDatePicker] = useState(false);
+const [showTimePicker, setShowTimePicker] = useState(false);
 
 
 
@@ -55,7 +59,7 @@ const handleSearch = () => {
 
 
 const handleAvailability = async () => {
-  if (!origin || !destination || !selectedDate) {
+  if (!origin || !destination || !rideDate) {
     Toast.show({
       type: 'error',
       text1: 'Origin, destination, and date are required',
@@ -84,7 +88,7 @@ const handleAvailability = async () => {
   const ok = await getRideBySearch({
     origin: { lat: originCoords.lat, lon: originCoords.lng },
     destination: { lat: destinationCoords.lat, lon: destinationCoords.lng },
-    departureDate: selectedDate,
+    departureDate: dayjs(rideDate).format('YYYY-MM-DD'),
     seatsNeeded: selectedSeat ? Number(selectedSeat) : 1,
   });
   if (!ok) return;
@@ -218,29 +222,25 @@ const handleAvailability = async () => {
   {/* Select Date */}
   <View style={className`flex-1 flex flex-col gap-3`}>
     <Text style={className`text-[#828282] text-[14px]`}>Select Date</Text>
-    <View style={className`bg-[#F0F0F0] h-10 px-3 flex flex-row items-center rounded-[8px]`}>
+    <TouchableOpacity onPress={() => setShowDatePicker(true)}
+      style={className`bg-[#F0F0F0] h-10 px-3 flex flex-row items-center rounded-[8px]`}>
       <Ionicons name="calendar-outline" size={20} color="black" />
-      <TextInput
-        style={className`flex-1 ml-2`}
-        placeholder="May 5 2024"
-        value={selectedDate}
-        onChangeText={setSelectedDate}
-      />
-    </View>
+      <Text style={className`flex-1 ml-2 ${rideDate ? 'text-black' : 'text-[#AAAAAA]'}`}>
+        {rideDate ? dayjs(rideDate).format('MMM DD, YYYY') : 'May 5 2024'}
+      </Text>
+    </TouchableOpacity>
   </View>
 
   {/* Select Time */}
   <View style={className`flex-1 flex flex-col gap-3`}>
     <Text style={className`text-[#828282] text-[14px]`}>Select Time</Text>
-    <View style={className`bg-[#F0F0F0] h-10 px-3 flex flex-row items-center rounded-[8px]`}>
+    <TouchableOpacity onPress={() => setShowTimePicker(true)}
+      style={className`bg-[#F0F0F0] h-10 px-3 flex flex-row items-center rounded-[8px]`}>
       <Ionicons name="time-outline" size={20} color="black" />
-      <TextInput
-        style={className`flex-1 ml-2`}
-        placeholder="09:51 AM"
-        value={selectedTime}
-        onChangeText={setSelectedTime}
-      />
-    </View>
+      <Text style={className`flex-1 ml-2 ${rideTime ? 'text-black' : 'text-[#AAAAAA]'}`}>
+        {rideTime ? dayjs(rideTime).format('hh:mm A') : '09:51 AM'}
+      </Text>
+    </TouchableOpacity>
   </View>
 
 </View>
@@ -266,6 +266,26 @@ const handleAvailability = async () => {
 
 
      </ScrollView>
+
+      <DateTimePickerModal
+        isVisible={showDatePicker}
+        mode="date"
+        minimumDate={new Date()}
+        onConfirm={(date: Date) => {
+          setRideDate(date);
+          setShowDatePicker(false);
+        }}
+        onCancel={() => setShowDatePicker(false)}
+      />
+      <DateTimePickerModal
+        isVisible={showTimePicker}
+        mode="time"
+        onConfirm={(date: Date) => {
+          setRideTime(date);
+          setShowTimePicker(false);
+        }}
+        onCancel={() => setShowTimePicker(false)}
+      />
 
     </View>
     </View>
