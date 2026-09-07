@@ -43,8 +43,14 @@ export default function MapEmbed(props: MapEmbedProps) {
         style={{ flex: 1 }}
         javaScriptEnabled
         domStorageEnabled
-        onError={() => setFailed(true)}
-        onHttpError={() => setFailed(true)}
+        onError={(e) => {
+          if (__DEV__) console.warn('[MapEmbed] WebView error, using static fallback:', e.nativeEvent.description);
+          setFailed(true);
+        }}
+        onHttpError={(e) => {
+          if (__DEV__) console.warn('[MapEmbed] embed request failed, using static fallback. HTTP', e.nativeEvent.statusCode, '— check the API key and that Maps Embed API is enabled.');
+          setFailed(true);
+        }}
       />
     </View>
   );
