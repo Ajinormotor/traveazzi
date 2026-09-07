@@ -169,7 +169,7 @@ git commit -m "feat: add authenticated GET /geolocation/geocode endpoint"
 ### Task 2: Search + create wiring (mobile)
 
 **Files (mobile repo):**
-- Modify: `store/driverStore.tsx` (add `geocodeAddress`; extend `getRideBySearch` signature + query params + auth header)
+- Modify: `store/driverStore.tsx` (add `geocodeAddress`; extend `getRideBySearch` signature to `Promise<boolean>` + query params + auth header)
 - Modify: `app/(schedule)/index.tsx` (origin state; geocode + search on Check Availability)
 - Modify: `app/(schedule)/scheduleResult.tsx` (render store `rides`; loading/empty states; drop mock list + fake timer)
 - Modify: `app/(driver)/create.tsx` (geocode at submit; real coords; delete hardcoded Lagos pair)
@@ -189,7 +189,7 @@ getRideBySearch: (params: {
   destination: { lat: number; lon: number };
   departureDate: string;
   seatsNeeded: number;
-}) => Promise<any>;
+}) => Promise<boolean>;
 ```
 
 Add the implementations (same file, following the existing token-header + Toast pattern):
@@ -217,7 +217,7 @@ geocodeAddress: async (address) => {
 },
 ```
 
-Rewrite `getRideBySearch` (replacing the zero-arg version) to send the coords as query params WITH the auth header it currently omits, and keep setting `rides` from the response:
+Rewrite `getRideBySearch` (replacing the zero-arg version) to send the coords as query params WITH the auth header it currently omits, keep setting `rides` from the response, and return a success boolean (`true` at the end of the try block, `false` in the catch block; interface signature `Promise<boolean>`):
 
 ```ts
 getRideBySearch: async (params) => {
@@ -236,11 +236,13 @@ getRideBySearch: async (params) => {
       headers: { Authorization: `Bearer ${token}` },
     });
     set({ rides: response.data?.data ?? [] });
+    return true;
   } catch (error: any) {
     Toast.show({
       type: 'error',
       text1: error?.response?.data?.message ?? 'Failed to search rides',
     });
+    return false;
   } finally {
     set({ loading: false });
   }
@@ -249,7 +251,7 @@ getRideBySearch: async (params) => {
 
 - [ ] **Step 2: Wire schedule screen (`app/(schedule)/index.tsx`)**
 
-Read the file first (required). Add an `origin` state (`useState('')`) and bind it to the first address `TextInput` (currently stateless). Read the existing `destination`, date, and seats states. Rewrite `handleAvailability` to: toast + return on empty origin/destination/date; geocode both addresses via `geocodeAddress` (toast + return if either resolves null); call `getRideBySearch` with `{ origin: { lat, lon: lng }, destination: { lat, lon: lng }, departureDate, seatsNeeded }` (note the `lng → lon` mapping); then push `/(schedule)/scheduleResult` only on success.
+Read the file first (required). Add an `origin` state (`useState('')`) and bind it to the first address `TextInput` (currently stateless). Read the existing `destination`, date, and seats states. Rewrite `handleAvailability` to: toast + return on empty origin/destination/date; geocode both addresses via `geocodeAddress` (toast + return if either resolves null); call `getRideBySearch` with `{ origin: { lat, lon: lng }, destination: { lat, lon: lng }, departureDate, seatsNeeded }` (note the `lng → lon` mapping); gate the push on the returned boolean (`if (!ok) return;`) then push `/(schedule)/scheduleResult` only on success. Remove the `onPress` from the `TouchableOpacity` wrapping the destination field (it must not navigate directly to results).
 
 - [ ] **Step 3: Render real results (`app/(schedule)/scheduleResult.tsx`)**
 
