@@ -9,6 +9,7 @@ import { useAuthStore } from '@/store/authStore'
 import apple from '../../assets/images/apple.png'
 import google from '../../assets/images/google.png'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import Toast from 'react-native-toast-message'
 // import email from '../../assets/images/mail.png'
 
 
@@ -26,7 +27,13 @@ const Logins = () => {
 
   
 const handleSubmit = async () => {
-  if (!email || !password) return;
+  if (!email || !password) {
+    Toast.show({
+      type: 'error',
+      text1: 'Please enter your email and password',
+    });
+    return;
+  }
 
   // login() persists session; the root layout guard handles role-based redirect
   const success = await login({ email, password });

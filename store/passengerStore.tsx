@@ -45,6 +45,10 @@ export const usePassengerStore = create<PassengerState>((set) => ({
         return list;
       } catch (error: any) {
         console.error("Error fetching my bookings:", error?.response?.data || error);
+        Toast.show({
+          type: "error",
+          text1: "Failed to fetch bookings",
+        });
         set({ loading: false });
         return [];
       }

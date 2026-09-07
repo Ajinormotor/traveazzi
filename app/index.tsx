@@ -21,7 +21,13 @@ const route = useRouter()
 const { registerMail, loading} = useAuthStore()
 
 const handleSubmit = async () => {
-  if (!email) return;
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    Toast.show({
+      type: 'error',
+      text1: 'Enter a valid email address',
+    });
+    return;
+  }
 
   const success = await registerMail(email);
   if (success) {

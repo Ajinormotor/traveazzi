@@ -10,6 +10,7 @@ import indicator from "../../../assets/images/indicator.png"
 import cancel from "../../../assets/images/cancel.png"
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { useLocalSearchParams, useRouter, Link } from 'expo-router'
+import Toast from 'react-native-toast-message'
 
 import downArrow from "../../../assets/images/down_arrow.png"
 import up from "../../../assets/images/up.png"
@@ -28,8 +29,7 @@ const [rideDetails, setRideDetails] = useState<RidePayload | null>(null)
   // console.log('Mange Id details:', id)
   const {rides, getAllRides} = useDriverRideStore()  
 
- const data =  rides.find((ride: any) => ride._id === id)   
- console.log('Start Ride details:', data) 
+  const data =  rides.find((ride: any) => ride._id === id)   
 
 const {startRides,loading} = useDriverRideStore() 
 
@@ -126,6 +126,11 @@ const handleReject = async(bookingId: string) => {
   try {
     await rejectPassengerRides(bookingId)
     await refetchPassengers()
+  } catch (error: any) {
+    Toast.show({
+      type: 'error',
+      text1: error?.response?.data?.message ?? error?.message ?? 'Failed to reject ride',
+    });
   } finally {
     setActionId(null)
   }
@@ -138,6 +143,11 @@ const handleAccept = async(bookingId: string) => {
   try {
     await acceptPassengerRides(bookingId)
     await refetchPassengers()
+  } catch (error: any) {
+    Toast.show({
+      type: 'error',
+      text1: error?.response?.data?.message ?? error?.message ?? 'Failed to accept ride',
+    });
   } finally {
     setActionId(null)
   }

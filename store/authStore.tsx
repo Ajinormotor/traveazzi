@@ -241,7 +241,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
       if (response.ok && data?.success) {
         set({ loading: false, token: data?.data?.token?.accessToken, user: data?.data?.user  });
-        Toast.show({ type: "success", text1: "Logged in" });
 
         await AsyncStorage.setItem("token", data?.data?.token?.accessToken);
         await AsyncStorage.setItem("user", JSON.stringify(data?.data?.user));

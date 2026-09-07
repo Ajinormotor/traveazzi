@@ -15,6 +15,7 @@ import down from "../../../assets/images/down.png"
 import { LinearGradient } from 'expo-linear-gradient'
 import { usePassengerStore } from '@/store/passengerStore'
 import { useDriverRideStore } from '@/store/driverStore'
+import Toast from 'react-native-toast-message'
 
 import userOne from "../../../assets/images/user_logo img (1).png"
 import dayjs from 'dayjs'
@@ -43,17 +44,27 @@ const [rideDetails, setRideDetails] = useState<any>(null);
 const [isLoading, setIsLoading] = useState(false);
 const [isPaying, setIsPaying] = useState(false);
 const [showReport, setShowReport] = useState(false);
+const [fetchError, setFetchError] = useState<string | null>(null);
 
+
+const fetchingSingleRide = async () => {
+  const rideId = Array.isArray(id) ? id[0] : id ?? '';
+  setFetchError(null);
+  try {
+    const result = await singleRides(rideId);
+    if (!result) {
+      setFetchError('Failed to load ride. Please try again.');
+      return;
+    }
+    setRideDetails(result);
+  } catch {
+    setFetchError('Failed to load ride. Please try again.');
+  }
+};
 
 useEffect(() => {
-  const fetchingSingleRide = async () => {
-    const rideId = Array.isArray(id) ? id[0] : id ?? '';
-    const result = await singleRides(rideId);
-    setRideDetails(result);
-  };
-
   fetchingSingleRide();
-}, [id, singleRides]);
+}, [id]);
 
 // console.log('Pay Ride Details', rideDetails)
 
@@ -74,6 +85,19 @@ useEffect(() => {
   };
 
 
+if (fetchError) {
+  return (
+    <View style={[className`flex-1 items-center justify-center gap-3 bg-white`]}>
+      <Text style={className`text-[14px] text-[#333]`}>{fetchError}</Text>
+      <TouchableOpacity
+        onPress={fetchingSingleRide}
+        style={className`bg-[#245AB0] px-6 h-[44px] flex items-center justify-center rounded-lg`}>
+        <Text style={className`text-white`}>Retry</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 if (!rideDetails) return <View style={[className`flex-1 items-center justify-center`]}><ActivityIndicator size={40}  color="#000"  /></View>; 
 
 const item = rideDetails;
@@ -84,6 +108,11 @@ const handlePay = async () => {
   try {
     await payBookings(item._id);
     route.push('/(passenger)/home')
+  } catch (error: any) {
+    Toast.show({
+      type: 'error',
+      text1: error?.response?.data?.message ?? error?.message ?? 'Payment failed. Please try again.',
+    });
   } finally {
     setIsPaying(false);
   }

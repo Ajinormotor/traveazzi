@@ -44,7 +44,8 @@ const DriverIndex = () => {
   };
 
   const { logout } = useAuthStore();
-  const { rides, getAllRides } = useDriverRideStore();
+  const { rides, getAllRides, loading } = useDriverRideStore();
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const handleLogout = async () => {
     await logout();
@@ -53,8 +54,31 @@ const DriverIndex = () => {
   };
 
   useEffect(() => {
-    getAllRides();
+    const fetchRides = async () => {
+      setFetchError(null);
+      try {
+        const result = await getAllRides();
+        if (!result) {
+          setFetchError('Failed to load rides. Please try again.');
+        }
+      } catch {
+        setFetchError('Failed to load rides. Please try again.');
+      }
+    };
+    fetchRides();
   }, []);
+
+  const handleRetry = async () => {
+    setFetchError(null);
+    try {
+      const result = await getAllRides();
+      if (!result) {
+        setFetchError('Failed to load rides. Please try again.');
+      }
+    } catch {
+      setFetchError('Failed to load rides. Please try again.');
+    }
+  };
 
   // Filter rides by status
   const filteredRides = rides.filter((item) => {
@@ -155,7 +179,26 @@ const DriverIndex = () => {
             style={className`flex flex-col gap-3 min-h-[200px]`}
           >
             <View style={className`mt-3`}>
-              {filteredRides && filteredRides.length > 0 ? (
+              {loading ? (
+                <View
+                  style={className`flex-1 flex items-center justify-center min-h-[200px]`}
+                >
+                  <ActivityIndicator  color="black" size={30}  />
+                </View>
+              ) : fetchError ? (
+                <View
+                  style={className`flex-1 flex flex-col items-center justify-center gap-3 min-h-[200px]`}
+                >
+                  <Text style={className`text-[#333] text-sm text-center`}>
+                    {fetchError}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={handleRetry}
+                    style={className`bg-[#245AB0] px-6 h-[40px] flex items-center justify-center rounded-[8px]`}>
+                    <Text style={className`text-white text-sm`}>Retry</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : filteredRides && filteredRides.length > 0 ? (
                 <View style={className`flex flex-col gap-4`}>
                   {filteredRides.map((rider: any) => (
                     <TouchableOpacity
@@ -234,13 +277,11 @@ const DriverIndex = () => {
                 <View
                   style={className`flex-1 flex items-center justify-center min-h-[200px]`}
                 >
-                  {/* <Text
-                    style={className`text-[#AAAAAA] text-2xl font-bold text-center`}
+                  <Text
+                    style={className`text-[#AAAAAA] text-base font-bold text-center`}
                   >
-                    No rides available
-                  </Text> */}
-
-                  <ActivityIndicator  color="black" size={30}  />
+                    No rides yet
+                  </Text>
                 </View>
               )}
             </View>

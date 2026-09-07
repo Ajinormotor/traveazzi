@@ -38,14 +38,25 @@ const [booking, setBooking] = useState<any>(null)
 const [ratingScore, setRatingScore] = useState(0)
 const [comment, setComment] = useState('')
 const [submitting, setSubmitting] = useState(false)
+const [fetchError, setFetchError] = useState<string | null>(null)
 
 // fetch the actual ride details
-useEffect(() => {
-    const fetchRide = async () => {
-        if (!rideId) return;
+const fetchRide = async () => {
+    if (!rideId) return;
+    setFetchError(null);
+    try {
         const result = await singleRides(rideId);
+        if (!result) {
+            setFetchError('Failed to load ride. Please try again.');
+            return;
+        }
         setRideDetails(result);
-    };
+    } catch {
+        setFetchError('Failed to load ride. Please try again.');
+    }
+};
+
+useEffect(() => {
     fetchRide();
 }, [rideId])
 
@@ -90,6 +101,19 @@ const handleSubmitRating = async () => {
         route.replace('/(passenger)/home');
     }
 };
+
+if (fetchError) {
+    return (
+        <View style={className`flex-1 items-center justify-center gap-3 bg-white`}>
+            <Text style={className`text-[14px] text-[#333]`}>{fetchError}</Text>
+            <TouchableOpacity
+                onPress={fetchRide}
+                style={className`bg-[#245AB0] px-6 h-[44px] flex items-center justify-center rounded-lg`}>
+                <Text style={className`text-white`}>Retry</Text>
+            </TouchableOpacity>
+        </View>
+    );
+}
 
 if (!rideDetails) {
     return (

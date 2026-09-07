@@ -25,12 +25,11 @@ const RegisterOtp = () => {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (timer <= 0) return;
     const countdown = setInterval(() => {
-      setTimer((prev) => prev - 1);
+      setTimer((prev) => (prev <= 1 ? 0 : prev - 1));
     }, 1000);
     return () => clearInterval(countdown);
-  }, [timer]);
+  }, []);
 
   const handleChange = (text: string, index: number) => {
     if (/^\d$/.test(text)) {
@@ -59,7 +58,6 @@ const RegisterOtp = () => {
       return;
     }
 
-    console.log("Otp code:", otp)
     const fullOtp = otp.join('');
 
     try {
@@ -80,9 +78,14 @@ const RegisterOtp = () => {
           text1: 'OTP Valid',
    
         });
+        route.push('/(auth)/signup');
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'OTP Error',
+          text2: response?.data?.message || 'Invalid code. Please try again.',
+        });
       }
-   
-      route.push('/(auth)/signup');
     } catch (error: any) {
       setError(true);
       const errorMessage =

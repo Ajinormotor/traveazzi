@@ -31,7 +31,7 @@ interface RideState {
   singleRides: (id: string) => Promise<any>
   startRides: (id: string) => Promise<any>
   getRideBySearch: () => Promise<any>
-  addVehicle: (vehicelData: VehiclePayload) => Promise<void>
+  addVehicle: (vehicelData: VehiclePayload) => Promise<boolean>
   allVehicle: () => Promise<any>
   getPassengerRides: (id: string) => Promise<any> 
   acceptPassengerRides: (id: string) => Promise<any>     
@@ -95,12 +95,10 @@ createRide: async (rideData) => {
   
       return response.data.data;
     } catch (error: any) {
-      // console.error("Error fetching rides:",
-      //    error?.response?.data || error);
-      // Toast.show({
-      //   type: "error",
-      //   text1: "Failed to fetch rides",
-      // });
+      Toast.show({
+        type: "error",
+        text1: "Failed to fetch rides",
+      });
       set({ loading: false });
     }
   },
@@ -179,6 +177,10 @@ createRide: async (rideData) => {
 
     } catch (error: any) {
       console.error("Error creating ride:", error?.response?.data || error);
+      Toast.show({
+        type: "error",
+        text1: "Failed to search rides",
+      });
     } finally {
       set({ loading: false });
     }
@@ -201,19 +203,18 @@ createRide: async (rideData) => {
       });
             set({ loading: false });
 
-        Toast.show({
-        type: "success",
-        text1: "Vehicle created",
-      });
+      return true;
 
   } catch (error: any) {
       console.error("Error creating ride:", error?.response?.data || error);
+      const message =
+        error?.response?.data?.message ?? error?.message ?? 'Something went wrong';
       Toast.show({
         type: "error",
-        text1: error?.response?.data || error,
+        text1: typeof message === 'string' ? message : 'Something went wrong',
       });
         set({ loading: false });
-      
+      return false;
     } finally {
       set({ loading: false });
     }
@@ -239,6 +240,10 @@ createRide: async (rideData) => {
     set({ vehicles: response?.data?.data.vehicles });
   } catch (error: any) {
     console.error("Error fetching vehicle:", error?.response?.data || error);
+    Toast.show({
+      type: "error",
+      text1: "Failed to fetch vehicles",
+    });
   } finally {
     set({ loading: false });
   }

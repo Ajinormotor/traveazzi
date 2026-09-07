@@ -38,16 +38,39 @@ const { requestBookings } = usePassengerStore();
 
 const [rideDetails, setRideDetails] = useState<any>(null);
 const [isLoading, setIsLoading] = useState(false)
+const [fetchError, setFetchError] = useState<string | null>(null);
+
+const fetchingSingleRide = async () => {
+  const rideId = Array.isArray(id) ? id[0] : id ?? '';
+  setFetchError(null);
+  try {
+    const result = await singleRides(rideId);
+    if (!result) {
+      setFetchError('Failed to load ride. Please try again.');
+      return;
+    }
+    setRideDetails(result);
+  } catch {
+    setFetchError('Failed to load ride. Please try again.');
+  }
+};
 
 useEffect(() => {
-  const fetchingSingleRide = async () => {
-    const rideId = Array.isArray(id) ? id[0] : id ?? '';
-    const result = await singleRides(rideId);
-    setRideDetails(result);
-  };
-
   fetchingSingleRide();
-}, [id, singleRides]);
+}, [id]);
+
+if (fetchError) {
+  return (
+    <View style={[className`flex-1 items-center justify-center gap-3 bg-white`]}>
+      <Text style={className`text-[14px] text-[#333]`}>{fetchError}</Text>
+      <TouchableOpacity
+        onPress={fetchingSingleRide}
+        style={className`bg-[#245AB0] px-6 h-[44px] flex items-center justify-center rounded-lg`}>
+        <Text style={className`text-white`}>Retry</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
 if (!rideDetails) return <View style={[className`flex-1 items-center justify-center`]}><ActivityIndicator size={40}  color="#000"  /></View>; 
 
@@ -348,13 +371,17 @@ style={className`flex flex-col gap-3`}
 
     <View style={className`flex flex-row gap-1 `}>
       
-        <TouchableOpacity  onPress={() => handleConfirm()}
-         style={className`bg-[#245AB0] w-[271px] h-[44px] flex items-center justify-center rounded-lg`}>
+        <TouchableOpacity  onPress={() => handleConfirm()} disabled={isLoading}
+         style={className`bg-[#245AB0] w-[271px] h-[44px] flex items-center justify-center rounded-lg ${isLoading ? 'opacity-60' : ''}`}>
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
             <Text style={className`text-white`}>
              { item?.status === 'IN_PROGRESS' && 'Continue Ride'  }
                { item?.status === 'SCHEDULED' && 'Request Ride' }
              
              </Text>
+            )}
         </TouchableOpacity>
 
         <View style={className`flex flex-row items-center justify-center border-[1px] border-[#E4EFFF]

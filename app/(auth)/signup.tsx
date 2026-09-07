@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 
 import { useAuthStore } from "@/store/authStore";
 import { ActivityIndicator } from "react-native";
+import Toast from "react-native-toast-message";
 
 import { Picker } from "@react-native-picker/picker";
 
@@ -29,6 +30,13 @@ const Signup = () => {
   const [portalType, setPortalType] = useState<"DRIVER" | "PASSENGER">("PASSENGER");
 
   const handleSubmit = async () => {
+    if (!password || password.length < 6) {
+      Toast.show({
+        type: "error",
+        text1: "Password must be at least 6 characters",
+      });
+      return;
+    }
     const success = await createProfile({
       firstName,
       lastName,
@@ -200,6 +208,7 @@ const Signup = () => {
 
           <TouchableOpacity
             onPress={handleSubmit}
+            disabled={loading}
             style={className`w-full h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px]  `}
           >
             {loading ? (

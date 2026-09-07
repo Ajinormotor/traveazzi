@@ -74,8 +74,8 @@ const [ features, setFeatures] = useState('')
 const { loading,addVehicle} = useDriverRideStore()
 
 const handleAddVehicle = async () => {
-  if (!carMake || !carModel || !carColor || !plateNumber || 
-    !selectedFeatures.length || !seatsAvailable) {
+  if (!carMake || !carModel || !carColor || !plateNumber ||
+    !carYear || !seatsAvailable) {
     Toast.show({
       type: "error",
       text1: "All fields are required",
@@ -83,12 +83,19 @@ const handleAddVehicle = async () => {
     return;
   }
 
-  console.log('year:', carYear)
+  const parsedYear = parseInt(carYear, 10);
+  if (!/^\d{4}$/.test(carYear.trim()) || Number.isNaN(parsedYear)) {
+    Toast.show({
+      type: "error",
+      text1: "Enter a valid 4-digit year",
+    });
+    return;
+  }
 
   const payload: VehiclePayload = {
     make: carMake,
     model: carModel,
-    year: parseInt(carYear, 10),
+    year: parsedYear,
     color: carColor,
     plateNumber,
     seatsAvailable,
@@ -96,7 +103,14 @@ const handleAddVehicle = async () => {
   };
 
   try {
-    await addVehicle(payload);
+    const ok = await addVehicle(payload);
+    if (!ok) {
+      Toast.show({
+        type: "error",
+        text1: "Something went wrong",
+      });
+      return;
+    }
     // Clear all form fields
     setCarModel('');
     setCarMake('');
@@ -229,6 +243,8 @@ showsHorizontalScrollIndicator={false}
         placeholder="Select  make"
         value={carYear}
         onChangeText={setCarYear}
+        keyboardType="numeric"
+        maxLength={4}
       />
     </View>
   </View>

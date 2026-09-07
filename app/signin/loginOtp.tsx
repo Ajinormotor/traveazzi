@@ -12,6 +12,7 @@ import {
   import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/store/authStore';
 import Toast from 'react-native-toast-message';
+import { ActivityIndicator } from 'react-native';
   
   const LoginOtp = () => {
     const route = useRouter();
@@ -22,17 +23,23 @@ import Toast from 'react-native-toast-message';
     // Refs to control input focus
     const inputs = useRef<Array<TextInput | null>>([]);
 
-    const { userEmail } = useAuthStore()
+    const { userEmail, registerMailOtp, registerMail, loading } = useAuthStore()
   
-    // useEffect(() => {
-    //   if (timer <= 0) return;
+    useEffect(() => {
+      if (timer <= 0) return;
   
-    //   const countdown = setInterval(() => {
-    //     setTimer((prev) => prev - 1);
-    //   }, 1000);
+      const countdown = setInterval(() => {
+        setTimer((prev) => (prev <= 1 ? 0 : prev - 1));
+      }, 1000);
   
-    //   return () => clearInterval(countdown);
-    // }, [timer]);
+      return () => clearInterval(countdown);
+    }, [timer]);
+
+    const handleResend = async () => {
+      if (timer > 0 || !userEmail) return;
+      setTimer(60);
+      await registerMail(userEmail);
+    };
   
     const handleChange = (text: string, index: number) => {
       if (/^\d$/.test(text)) {
@@ -50,9 +57,8 @@ import Toast from 'react-native-toast-message';
       }
     };
 
-    const {registerMailOtp} = useAuthStore()
-
     const handleSubmit = async() => {
+      if (loading) return;
       const code = otp.join('');
 
       if (code.length < 6) {
@@ -115,8 +121,10 @@ import Toast from 'react-native-toast-message';
   
             {/* Countdown + Options */}
             <View style={className`flex flex-row gap-2`}>
-              <View
-                style={className`bg-[#F6F6F6] max-w-[146px] w-full h-[29px] rounded-[30px] flex flex-row items-center justify-center`}
+              <TouchableOpacity
+                onPress={handleResend}
+                disabled={timer > 0 || loading}
+                style={className`bg-[#F6F6F6] max-w-[146px] w-full h-[29px] rounded-[30px] flex flex-row items-center justify-center ${timer > 0 ? 'opacity-60' : ''}`}
               >
                 <Text style={className`text-[#969696] text-[14px]`}>
                   Resend
@@ -125,7 +133,7 @@ import Toast from 'react-native-toast-message';
                   {' '}
                   ({timer}s)
                 </Text>
-              </View>
+              </TouchableOpacity>
   
               <View
                 style={className`bg-[#F6F6F6] max-w-[146px] w-full h-[29px] rounded-[30px] flex flex-row items-center justify-center`}
@@ -139,9 +147,14 @@ import Toast from 'react-native-toast-message';
             {/* Continue Button */}
             <TouchableOpacity
               onPress={handleSubmit }
-              style={className`w-full h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px]`}
+              disabled={loading}
+              style={className`w-full h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px] ${loading ? 'opacity-60' : ''}`}
             >
-              <Text style={className`text-white text-[16px]`}>Continue</Text>
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={className`text-white text-[16px]`}>Continue</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>
