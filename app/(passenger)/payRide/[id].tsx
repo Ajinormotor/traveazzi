@@ -46,6 +46,12 @@ const [isLoading, setIsLoading] = useState(false);
 const [isPaying, setIsPaying] = useState(false);
 const [showReport, setShowReport] = useState(false);
 const [fetchError, setFetchError] = useState<string | null>(null);
+const isMounted = useRef(true);
+
+useEffect(() => {
+  isMounted.current = true;
+  return () => { isMounted.current = false; };
+}, []);
 
 
 const fetchingSingleRide = async () => {
@@ -117,24 +123,31 @@ const handlePay = async () => {
   setIsPaying(true);
   try {
     const bookingId = await findBookingId();
+    if (!isMounted.current) return;
     if (!bookingId) {
       Toast.show({ type: 'error', text1: 'No booking found for this ride yet' });
       return;
     }
     const init = await payBookings(bookingId);
+    if (!isMounted.current) return;
     if (!init?.authorization_url) {
       throw new Error('No payment page returned. Please try again.');
     }
     await WebBrowser.openBrowserAsync(init.authorization_url);
+    if (!isMounted.current) return;
     const deadline = Date.now() + 60000;
     let paid = false;
     while (Date.now() < deadline) {
+      if (!isMounted.current) break;
       await new Promise((res) => setTimeout(res, 5000));
+      if (!isMounted.current) break;
       const list = (await getMyBookings({ silent: true })) ?? [];
+      if (!isMounted.current) break;
       const current = list.find((b: any) => b?._id === bookingId);
       if (current?.paymentStatus === 'PAID') { paid = true; break; }
       if (current?.paymentStatus === 'FAILED') break;
     }
+    if (!isMounted.current) return;
     if (paid) {
       Toast.show({ type: 'success', text1: 'Payment successful' });
       route.push('/(passenger)/home');
@@ -142,9 +155,10 @@ const handlePay = async () => {
       Toast.show({ type: 'error', text1: 'Payment not confirmed yet. Please try again.' });
     }
   } catch (error: any) {
+    if (!isMounted.current) return;
     Toast.show({ type: 'error', text1: error?.message ?? 'Payment failed. Please try again.' });
   } finally {
-    setIsPaying(false);
+    if (isMounted.current) setIsPaying(false);
   }
 };
 

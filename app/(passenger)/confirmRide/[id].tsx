@@ -1,6 +1,6 @@
 import { ActivityIndicator, Image, ScrollView, StyleSheet,
      Text, TouchableOpacity, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import className, { style } from 'twrnc'
 import MapEmbed from '@/components/MapEmbed';
 import bg from "../../../assets/images/map_bg.png"
@@ -40,6 +40,12 @@ const [rideDetails, setRideDetails] = useState<any>(null);
 const [isLoading, setIsLoading] = useState(false)
 const [isCancelling, setIsCancelling] = useState(false);
 const [fetchError, setFetchError] = useState<string | null>(null);
+const isMounted = useRef(true);
+
+useEffect(() => {
+  isMounted.current = true;
+  return () => { isMounted.current = false; };
+}, []);
 
 const fetchingSingleRide = async () => {
   const rideId = Array.isArray(id) ? id[0] : id ?? '';
@@ -124,18 +130,23 @@ const handleCancel = async () => {
   setIsCancelling(true);
   try {
     const list = (await getMyBookings({ silent: true })) ?? [];
+    if (!isMounted.current) return;
     const match = list.find((b: any) => {
       const rid = b?.ride?._id ?? (typeof b?.rideId === 'object' ? b?.rideId?._id : b?.rideId);
       return rid === item?._id;
     });
     if (!match?._id) {
+      setIsCancelling(false);
+      if (!isMounted.current) return;
       route.back();
       return;
     }
     const ok = await cancelBooking(match._id);
+    if (!isMounted.current) return;
+    setIsCancelling(false);
     if (ok) route.back();
   } finally {
-    setIsCancelling(false);
+    if (isMounted.current) setIsCancelling(false);
   }
 };
 
