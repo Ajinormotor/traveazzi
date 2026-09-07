@@ -26,6 +26,7 @@
 - Create: `src/modules/geolocation/geolocation.controller.ts`
 - Create: `src/modules/geolocation/geolocation.controller.spec.ts`
 - Modify: `src/modules/geolocation/geolocation.module.ts` (register controller)
+- Modify (permitted infra): root `package.json` jest `moduleNameMapper` (`^src/(.*)$: <rootDir>/$1`) — required because the service graph uses absolute `src/...` imports that jest cannot otherwise resolve; no runtime effect
 
 **Interfaces:**
 - Consumes: `GeolocationService.geocode(address): Promise<{lat,lng} | null>` (exists, NG-biased); `AuthGuard` from `../../core/guards/authenticate.guard` (same import as `rides.controller.ts:14`)
@@ -159,7 +160,7 @@ Expected: exit 0.
 - [ ] **Step 5: Commit (backend repo)**
 
 ```bash
-git add src/modules/geolocation/geolocation.controller.ts src/modules/geolocation/geolocation.controller.spec.ts src/modules/geolocation/geolocation.module.ts
+git add src/modules/geolocation/geolocation.controller.ts src/modules/geolocation/geolocation.controller.spec.ts src/modules/geolocation/geolocation.module.ts package.json
 git commit -m "feat: add authenticated GET /geolocation/geocode endpoint"
 ```
 
