@@ -160,7 +160,7 @@ export default function PassengerIndex() {
 
 - [ ] **Step 3: Rewire scheduleResult push**
 
-The Task 2 rewrite pushes results to the deleted `/rideDetails/[id]`. Change that push to the live screen `/(passenger)/confirmRide/[id]` with `params: { id }`, using the real result id field from the Task 2 search results.
+Task 2 established that real schedule search is unwireable mobile-only (no geocoding; `getRideBySearch` takes no search args), so scheduleResult still renders mock `riderListData` items. Change its push from the deleted `/rideDetails/[id]` to the live screen `/(passenger)/confirmRide/[id]` with `params: { id }` using the mock item's `id` field. The live screen's error UI handles the unresolvable id gracefully (no crash). Do not attempt real search wiring here — it is a parked backend follow-up.
 
 - [ ] **Step 4: Layout cleanup**
 
@@ -254,6 +254,8 @@ git commit -m "feat: role picker at signup with group route guards"
 `store/driverStore.tsx` `addVehicle` catch: extract a readable message (`error?.response?.data?.message ?? error?.message ?? 'Something went wrong'`) instead of toasting the raw object.
 `store/authStore.tsx:241-242`: remove the "Logged in" success toast from background `userProfile` refresh.
 `store/passengerStore.tsx` `getMyBookings` catch and `store/driverStore.tsx` `getRideBySearch` catch: add error toasts (keep returning the safe fallbacks `[]`/stale list).
+`app/(passenger)/payRide/[id].tsx` `handlePay`: add `catch` + error toast (currently `try/finally` silently resets paying state on failure).
+`app/(driver)/[id]/startRide.tsx` `handleAccept`/`handleReject`: add `try/catch` + error toast (store throw is currently an unhandled rejection); keep the `finally` clearing the loading id.
 
 - [ ] **Step 4: Log cleanup**
 
