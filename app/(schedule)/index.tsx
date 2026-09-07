@@ -80,12 +80,13 @@ const handleAvailability = async () => {
     return;
   }
 
-  await getRideBySearch({
+  const ok = await getRideBySearch({
     origin: { lat: originCoords.lat, lon: originCoords.lng },
     destination: { lat: destinationCoords.lat, lon: destinationCoords.lng },
     departureDate: selectedDate,
     seatsNeeded: selectedSeat ? Number(selectedSeat) : 1,
   });
+  if (!ok) return;
 
   route.push(`/(schedule)/scheduleResult`);
 }
@@ -148,7 +149,7 @@ const handleAvailability = async () => {
      
      </TouchableOpacity>
 
-        <TouchableOpacity  onPress={() =>  route.push(`/(schedule)/scheduleResult`)}
+        <TouchableOpacity
         style={className`w-[361px] w-full h-[46px] bg-[#F6F6F6] rounded-[8px] w-full flex flex-row items-center 
        px-2  gap-3`}>
         <Ionicons name='search' color="black" size={20} style={className``}  />

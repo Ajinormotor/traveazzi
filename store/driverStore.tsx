@@ -35,7 +35,7 @@ interface RideState {
     destination: { lat: number; lon: number };
     departureDate: string;
     seatsNeeded: number;
-  }) => Promise<any>;
+  }) => Promise<boolean>;
   geocodeAddress: (address: string) => Promise<{ lat: number; lng: number } | null>;
   addVehicle: (vehicelData: VehiclePayload) => Promise<boolean>
   allVehicle: () => Promise<any>
@@ -204,11 +204,13 @@ createRide: async (rideData) => {
         headers: { Authorization: `Bearer ${token}` },
       });
       set({ rides: response.data?.data ?? [] });
+      return true;
     } catch (error: any) {
       Toast.show({
         type: 'error',
         text1: error?.response?.data?.message ?? 'Failed to search rides',
       });
+      return false;
     } finally {
       set({ loading: false });
     }
