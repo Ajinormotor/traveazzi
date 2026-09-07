@@ -19,6 +19,13 @@ export const searchData = [
     // },
 
     {    id: '2',
+        img: scheduled,
+        title: 'Schedule a Ride',
+        subtitle: 'Search rides by date and route.',
+        path: '/(schedule)',
+    },
+
+    {    id: '3',
         img: trip,
         title: 'Trip History',
         subtitle: 'See a log of your completed trips.',
