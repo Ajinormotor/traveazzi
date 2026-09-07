@@ -61,7 +61,7 @@ const route = useRouter()
 
 <View style={className`flex flex-row `}>
 <Text style={className`text-[14px] font-medium gap-1 flex flex-row`}>No account?  </Text>
-<Link href="/signin/login" style={className`text-[#007BFF] text-[14px] `}>Create one</Link>
+<Link href="/" style={className`text-[#007BFF] text-[14px] `}>Create one</Link>
 </View>
       
         </View>

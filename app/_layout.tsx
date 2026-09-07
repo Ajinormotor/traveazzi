@@ -84,6 +84,9 @@ useEffect(() => {
            {/* <Stack.Screen name="(offer)"  /> */}
               <Stack.Screen name="(driver)"  />
                       <Stack.Screen name="(passenger)"  />
+           <Stack.Screen name="signin"  />
+           <Stack.Screen name="register"  />
+           <Stack.Screen name="transitRide/[id]"  />
 
         </Stack>
 

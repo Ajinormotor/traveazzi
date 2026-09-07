@@ -97,7 +97,7 @@ const handleLogout = async() => {
             ${showMenu ? 'flex' : 'hidden'}
           `}>
             <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
-              <Link href="/(passenger)"
+              <Link href="/(passenger)/home"
               style={className`border-b border-gray-200`}>
               <Text> Home </Text>
                </Link>

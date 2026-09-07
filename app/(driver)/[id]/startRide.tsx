@@ -48,7 +48,7 @@ const handleSubmit = async () => {
 
   if(success) {
   setTimeout(() => {
-  router.push(`/manageRide/${id}`);
+  router.push(`/(driver)/manageRide/${id}`);
 
   }, 100);  
 
@@ -183,14 +183,14 @@ style={className`flex flex-col gap-3  `}>
     ${showMenu ? 'flex' : 'hidden'}
   `}>
     <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
-      <Link href="/vehicle"
+      <Link href="/(driver)/vehicle"
       style={className`border-b border-gray-200`}>
       <Text>Vehicle</Text>
        </Link>
     </TouchableOpacity>
 
         <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
-      <Link href="/vehicle"
+      <Link href="/(driver)/vehicle"
       style={className`border-b border-gray-200`}>
       <Text> Profile </Text>
        </Link>
@@ -397,7 +397,7 @@ style={className`flex flex-col gap-3  `}>
       onPress={() => 
   rideDetails?.status === "SCHEDULED" 
     ? handleSubmit() 
-    : router.push(`/manageRide/${id}`)
+    : router.push(`/(driver)/manageRide/${id}`)
 }
 
         style={className`w-full h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px]`}>

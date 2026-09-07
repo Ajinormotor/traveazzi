@@ -123,7 +123,7 @@ style={className`bg-[#F0F0F0] h-[46px] w-full rounded-[8px]
     Don't have an account?{' '}
     <Text
       style={className`text-[#007BFF]`}
-      onPress={() => router.push('/signup')}
+      onPress={() => router.push('/(auth)/signup')}
     >
       Sign up
     </Text>

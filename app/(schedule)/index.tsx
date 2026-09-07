@@ -49,7 +49,7 @@ const handleSearch = () => {
 
 
 const handleAvailability = () => {
- route.push(`/scheduleResult`);
+ route.push(`/(schedule)/scheduleResult`);
 }
 
   return (
@@ -110,7 +110,7 @@ const handleAvailability = () => {
      
      </TouchableOpacity>
 
-        <TouchableOpacity  onPress={() =>  route.push(`/scheduleResult`)}
+        <TouchableOpacity  onPress={() =>  route.push(`/(schedule)/scheduleResult`)}
         style={className`w-[361px] w-full h-[46px] bg-[#F6F6F6] rounded-[8px] w-full flex flex-row items-center 
        px-2  gap-3`}>
         <Ionicons name='search' color="black" size={20} style={className``}  />

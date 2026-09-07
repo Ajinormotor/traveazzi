@@ -112,7 +112,7 @@ const DriverIndex = () => {
                   `}
                 >
                   <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
-                    <Link href="/vehicle" style={className`border-b border-gray-200`}>
+                    <Link href="/(driver)/vehicle" style={className`border-b border-gray-200`}>
                       <Text>Vehicle</Text>
                     </Link>
                   </TouchableOpacity>
@@ -160,7 +160,7 @@ const DriverIndex = () => {
                   {filteredRides.map((rider: any) => (
                     <TouchableOpacity
                       key={rider._id}
-                      onPress={() => router.push(`/${rider._id}/startRide`)}
+                      onPress={() => router.push(`/(driver)/${rider._id}/startRide`)}
                     >
                       <View
                         style={className`border border-[#EBEBEB] rounded-[8px] bg-white`}
@@ -249,7 +249,7 @@ const DriverIndex = () => {
           {/* Action Buttons */}
           <View style={className`flex flex-col gap-3 mt-4`}>
             <TouchableOpacity
-              onPress={() => route.push("/create")}
+              onPress={() => route.push("/(driver)/create")}
               style={className`w-full h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px]`}
             >
               <Text style={className`text-white text-[16px]`}>

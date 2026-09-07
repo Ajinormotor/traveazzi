@@ -114,7 +114,7 @@ style={className`h-[85%] bg-[#FAFAFA] flex-col flex rounded-t-[30px]  gap-7 p-1`
     </View>
 
     
-<TouchableOpacity  onPress={() => route.push('/addVehicle')}
+<TouchableOpacity  onPress={() => route.push('/(driver)/addVehicle')}
  style={className`flex  flex-row  items-center justify-center`}>
 
         

@@ -71,7 +71,7 @@ const handleConfirm = async () => {
   if (item?.status === 'IN_PROGRESS') {
     setIsLoading(false)
     route.push({
-      pathname: '/payRide/[id]',
+      pathname: '/(passenger)/payRide/[id]',
       params: { id: item._id }
     });
     return;

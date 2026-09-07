@@ -29,7 +29,7 @@ const ManageRides = () => {
 const router = useRouter()
 
 const handleSubmit = () => {
-    router.push('/destination')
+    router.push('/(driver)/destination')
 }
 
 const {getPassengerRides, completeBookingRide} = useDriverRideStore()
