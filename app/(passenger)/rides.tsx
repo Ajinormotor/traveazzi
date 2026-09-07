@@ -15,6 +15,7 @@ import userOne from "../../assets/images/user_logo img (1).png"
 import { Link, useRouter, useLocalSearchParams } from 'expo-router'
 import { useAuthStore } from '@/store/authStore'
 import { useDriverRideStore } from '@/store/driverStore'
+import { usePassengerStore } from '@/store/passengerStore'
 
 
 import dayjs from 'dayjs';
@@ -33,10 +34,39 @@ const query = typeof q === 'string' ? q.toLowerCase() : '';
 
 // const {logout} = useAuthStore()
 const {rides, getAllRides, loading} = useDriverRideStore()
+const { favorites, getFavoriteDrivers, addFavoriteDriver, removeFavoriteDriver } = usePassengerStore()
+const [pendingFavId, setPendingFavId] = useState<string | null>(null)
 
 useEffect(() => {
   getAllRides()
+  getFavoriteDrivers()
 },[])
+
+// Driver ids of favorited drivers (favorites entries carry a populated
+// driver object; fall back to flat shapes if the backend returns those).
+const favoriteDriverIds = new Set(
+  (Array.isArray(favorites) ? favorites : [])
+    .map((f: any) => {
+      const d = f?.driver;
+      if (typeof d === 'object' && d !== null) return d?._id;
+      return d ?? f?.driverId ?? f?.driver_id
+        ?? (f && f?.driver === undefined && (f?.firstName || f?.lastName || f?.name) ? f?._id : undefined);
+    })
+    .filter((id): id is string => typeof id === 'string' && id.length > 0),
+);
+
+const handleFavoriteToggle = async (driverId: string, isFav: boolean) => {
+  if (pendingFavId) return;
+  setPendingFavId(driverId);
+  try {
+    const ok = isFav
+      ? await removeFavoriteDriver(driverId)
+      : await addFavoriteDriver(driverId);
+    if (ok) await getFavoriteDrivers();
+  } finally {
+    setPendingFavId(null);
+  }
+};
 
 const searchResults = Array.isArray(rides) && query
   ? rides.filter((r: any) => {
@@ -161,7 +191,14 @@ showsVerticalScrollIndicator={false}
 
       <View style={className`flex flex-col gap-3`}>
         {
-           searchResults.map((r: any) => (
+            searchResults.map((r: any) => {
+              const driverId = typeof r.driver === 'object' && r.driver !== null
+                ? r.driver?._id
+                : (r.driver ?? r.driverId ?? r.driver_id);
+              const hasDriverId = typeof driverId === 'string' && driverId.length > 0;
+              const isFav = hasDriverId && favoriteDriverIds.has(driverId);
+              const favPending = hasDriverId && pendingFavId === driverId;
+              return (
 
     <View key={r._id}  style={className`flex flex-col gap-2`}>
 
@@ -201,12 +238,25 @@ showsVerticalScrollIndicator={false}
 
 </View>
 
+<View style={className`flex flex-row items-center gap-3`}>
+{hasDriverId ? (
+<TouchableOpacity onPress={() => handleFavoriteToggle(driverId, isFav)} disabled={!!favPending}
+  style={className`${favPending ? 'opacity-60' : ''}`}>
+    {favPending ? (
+      <ActivityIndicator size="small" color="#245AB0" />
+    ) : (
+      <Ionicons name={isFav ? "heart" : "heart-outline"} size={20} color={isFav ? "#E0245E" : "#AAAAAA"} />
+    )}
+</TouchableOpacity>
+) : null}
+
 <TouchableOpacity>
 
     <Image source={options} alt=''
     className='w-[20px] h-[20px] rounded-full'  />
 
 </TouchableOpacity>
+</View>
 
                     </View>
 </View>
@@ -297,8 +347,8 @@ style={className`w-[361px] h-[46px] bg-[#245AB0] flex items-center justify-cente
 </View>
 
                 </View>
-            )) 
-          }
+              );
+            })}
    </View>
             :
  <View style={className`flex-1 flex-col items-center justify-center min-h-[300px] gap-3`}>

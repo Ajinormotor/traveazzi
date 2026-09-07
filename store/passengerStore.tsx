@@ -24,11 +24,16 @@ interface PassengerState {
   payBookings: (id: string) => Promise<any>;
   cancelBooking: (bookingId: string) => Promise<boolean>;
   bookings: string[];
+  favorites: any[];
+  getFavoriteDrivers: () => Promise<any>;
+  addFavoriteDriver: (driverId: string) => Promise<boolean>;
+  removeFavoriteDriver: (driverId: string) => Promise<boolean>;
 }
 
 export const usePassengerStore = create<PassengerState>((set) => ({
     loading: false,
     bookings: [],
+    favorites: [],
 
      getMyBookings: async (options) => {
       set({ loading: true });
@@ -210,6 +215,60 @@ requestBookings: async (payload) => {
       Toast.show({
         type: 'error',
         text1: error?.response?.data?.message ?? 'Failed to cancel booking',
+      });
+      return false;
+    }
+  },
+
+  getFavoriteDrivers: async () => {
+    try {
+      const token = useAuthStore.getState().token;
+      const response = await axios.get(`${Base_Url}/passenger/favorite-drivers`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const list = response.data?.data ?? [];
+      set({ favorites: list });
+      return list;
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text1: error?.response?.data?.message ?? 'Failed to load favorites',
+      });
+      return [];
+    }
+  },
+
+  addFavoriteDriver: async (driverId: string) => {
+    try {
+      const token = useAuthStore.getState().token;
+      await axios.post(
+        `${Base_Url}/passenger/favorite-drivers`,
+        { driverId },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      Toast.show({ type: 'success', text1: 'Driver added to favorites' });
+      return true;
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text1: error?.response?.data?.message ?? 'Failed to add favorite',
+      });
+      return false;
+    }
+  },
+
+  removeFavoriteDriver: async (driverId: string) => {
+    try {
+      const token = useAuthStore.getState().token;
+      await axios.delete(`${Base_Url}/passenger/favorite-drivers/${driverId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      Toast.show({ type: 'success', text1: 'Driver removed from favorites' });
+      return true;
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text1: error?.response?.data?.message ?? 'Failed to remove favorite',
       });
       return false;
     }
