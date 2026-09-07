@@ -37,6 +37,7 @@ interface RideState {
     seatsNeeded: number;
   }) => Promise<boolean>;
   geocodeAddress: (address: string) => Promise<{ lat: number; lng: number } | null>;
+  autocompleteAddress: (input: string) => Promise<Array<{ description: string; placeId: string }>>;
   addVehicle: (vehicelData: VehiclePayload) => Promise<boolean>
   allVehicle: () => Promise<any>
   getPassengerRides: (id: string) => Promise<any> 
@@ -186,6 +187,19 @@ createRide: async (rideData) => {
         text1: error?.response?.data?.message ?? 'Could not locate that address',
       });
       return null;
+    }
+  },
+  autocompleteAddress: async (input) => {
+    try {
+      const token = useAuthStore.getState().token;
+      const response = await axios.get(`${Base_Url}/geolocation/autocomplete`, {
+        params: { input },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const list = response.data?.data ?? [];
+      return Array.isArray(list) ? list : [];
+    } catch {
+      return [];
     }
   },
   getRideBySearch: async (params) => {
