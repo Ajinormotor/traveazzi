@@ -65,7 +65,7 @@ const CreateRide = () => {
   const [selectedVehicle, setSelectedVehicle] = useState("");
   const [vehicleId, setVehicleId] = useState("");
 
-  const { createRide,getAllRides, loading } = useDriverRideStore();
+  const { createRide,getAllRides, geocodeAddress, loading } = useDriverRideStore();
   
   const { allVehicle , vehicles} = useDriverRideStore()
   useEffect(() => {
@@ -172,15 +172,33 @@ if (!combinedDate.isValid()) {
   //   text1: 'Clicked two',
   // });
 
+  const originCoords = await geocodeAddress(originAddress);
+  if (!originCoords) {
+    Toast.show({
+      type: 'error',
+      text1: 'Could not locate the pickup address',
+    });
+    return;
+  }
+
+  const destinationCoords = await geocodeAddress(destinationAddress);
+  if (!destinationCoords) {
+    Toast.show({
+      type: 'error',
+      text1: 'Could not locate the drop-off address',
+    });
+    return;
+  }
+
   const payload = {
     vehicleId,
     origin: {
-      lat: 6.5244,
-      lon: 3.3792,
+      lat: originCoords.lat,
+      lon: originCoords.lng,
     },
     destination: {
-      lat: 6.5244,
-      lon: 3.3792,
+      lat: destinationCoords.lat,
+      lon: destinationCoords.lng,
     },
     originAddress,
     destinationAddress,

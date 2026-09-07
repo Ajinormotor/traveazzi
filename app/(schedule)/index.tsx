@@ -14,6 +14,8 @@ import bg from "../../assets/images/map_bg.png"
 import marker from "../../assets/images/marker.png"
 // 
 import { Link, useRouter } from 'expo-router'
+import { useDriverRideStore } from '@/store/driverStore'
+import Toast from 'react-native-toast-message'
 
 
 
@@ -41,15 +43,51 @@ const [selectedTime, setSelectedTime] = useState('');
 
   
 const route = useRouter()
+const [origin, setOrigin] = useState('');
 const [destination, setDestination] = useState('');
+
+const { geocodeAddress, getRideBySearch } = useDriverRideStore();
 
 const handleSearch = () => { 
    //
 };
 
 
-const handleAvailability = () => {
- route.push(`/(schedule)/scheduleResult`);
+const handleAvailability = async () => {
+  if (!origin || !destination || !selectedDate) {
+    Toast.show({
+      type: 'error',
+      text1: 'Origin, destination, and date are required',
+    });
+    return;
+  }
+
+  const originCoords = await geocodeAddress(origin);
+  if (!originCoords) {
+    Toast.show({
+      type: 'error',
+      text1: 'Could not locate the origin address',
+    });
+    return;
+  }
+
+  const destinationCoords = await geocodeAddress(destination);
+  if (!destinationCoords) {
+    Toast.show({
+      type: 'error',
+      text1: 'Could not locate the destination address',
+    });
+    return;
+  }
+
+  await getRideBySearch({
+    origin: { lat: originCoords.lat, lon: originCoords.lng },
+    destination: { lat: destinationCoords.lat, lon: destinationCoords.lng },
+    departureDate: selectedDate,
+    seatsNeeded: selectedSeat ? Number(selectedSeat) : 1,
+  });
+
+  route.push(`/(schedule)/scheduleResult`);
 }
 
   return (
@@ -106,7 +144,7 @@ const handleAvailability = () => {
      <TouchableOpacity style={className`w-[361px] w-full h-[46px] bg-[#F6F6F6] rounded-[8px] w-full flex flex-row items-center 
        px-2 gap-3 `}>
         <Image source={gps}  style={className``}  />
-        <TextInput  placeholder='Legend Hotel Lagos Airport, Curio collection'  style={className`max-w-[85%] w-full bg-transparent text-[16px]`}  />
+        <TextInput  placeholder='Legend Hotel Lagos Airport, Curio collection'  value={origin} onChangeText={setOrigin} style={className`max-w-[85%] w-full bg-transparent text-[16px]`}  />
      
      </TouchableOpacity>
 

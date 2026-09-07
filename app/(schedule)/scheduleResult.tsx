@@ -1,5 +1,5 @@
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import React, { useState } from 'react'
 import className, { style } from 'twrnc'
 import MapEmbed from '@/components/MapEmbed';
 import bg from "../../assets/images/map_bg.png"
@@ -8,25 +8,12 @@ import directions from "../../assets/images/navigation-03.png"
 import indicator from "../../assets/images/indicator.png"
 import cancel from "../../assets/images/cancel.png"
 import load from "../../assets/images/available drivers.png"
-import options from "../../assets/images/options.png"
-import { riderListData } from '@/constants/data/riderList'
-import routes_arrow from "../../assets/images/routes_arrow.png"
 import { useRouter } from 'expo-router'
+import { useDriverRideStore } from '@/store/driverStore'
 
 const ScheduleResult = () => {
-const [loading,setLoading] = useState<boolean >(true)
+const { rides, loading } = useDriverRideStore();
 const route = useRouter()
-
-useEffect(() => {
-    
-    const hideTimeout = setTimeout(() => {
-      setLoading(false);
-    }, 1000); 
-  
-    return () => {
-      clearTimeout(hideTimeout);
-    };
-  }, []);
   
 
 const [ scheduled, setScheduled] = useState(false)
@@ -78,6 +65,8 @@ const [ scheduled, setScheduled] = useState(false)
 
       </View>
 
+      <ActivityIndicator size="large" color="#245AB0" />
+
       <View style={className`flex-1`}>
       <Image  source={load} alt=''
       className='flex-1 h-full w-full' />
@@ -117,20 +106,27 @@ showsVerticalScrollIndicator={false}
       </View>
 
       <View style={className`flex flex-col gap-3`}>
-        {
-            riderListData.map((r) => (
-                <View key={r.id}  style={className`flex flex-col gap-2`}>
+        {rides.length === 0 ? (
+          <View style={className`flex flex-col items-center justify-center py-10`}>
+            <Text style={className`text-[16px] font-bold`}>No rides found</Text>
+            <Text style={className`text-[14px] text-[#AAAAAA]`}>Try a different route or date.</Text>
+          </View>
+        ) : (
+            rides.map((r: any) => {
+              const rideId = r._id ?? r.id;
+              return (
+                <View key={rideId}  style={className`flex flex-col gap-2`}>
 
-<View style={className`flex flex-col gap-[10px] bg-white`} > 
+<View style={className`flex flex-col gap-[10px] bg-white`} >
 
                     <View style={className`flex flex-row items-center justify-between`}>
 
                         <View style={className`w-[101px] h-[31px] bg-[#F7F7F7] rounded-[5px] p-1 flex 
                             flex-row items-center justify-center`}>
-                            <Text>{r.plate_no}</Text>
+                            <Text>{r.vehicleId ?? rideId}</Text>
                         </View>
                         <View>
-                 <Text style={className`text-2xl text-[#008000]`}>₦{r.price}</Text>
+                 <Text style={className`text-2xl text-[#008000]`}>₦{r.pricePerSeat ?? r.price}</Text>
                         </View>
 
                     </View>
@@ -139,72 +135,21 @@ showsVerticalScrollIndicator={false}
                         
                     </View>
 
-                   <View style={className`flex flex-row items-center justify-between`}>
+                   <View style={className`flex flex-col gap-1 py-4`}>
 
-<View style={className`flex flex-row gap-1`}>
-    <View>
-    <Image source={r.image} alt=''
-    className='w-[50px] h-[50px] rounded-full'  />
-    </View>
-    <View style={className`flex flex-col gap-[1px]`}>
-        <Text style={className`text-sm font-bold text-black`}> {r.rider_name} </Text>
-        <Text style={className`font-bold text-[12px]  text-[#A1A1A1]`}> {r.vehicle} </Text>
-    </View>
-
+<View style={className`flex flex-col gap-1`}>
+    <Text style={className`text-[14px] font-bold`}>{r.originAddress}</Text>
+    <Text style={className`text-[12px] font-bold text-[#434343]`}>{r.destinationAddress}</Text>
 </View>
 
-<TouchableOpacity>
-    <Image source={options} alt=''
-    className='w-[20px] h-[20px] rounded-full'  />
-</TouchableOpacity>
+{r.departureTime ? (
+<View>
+    <Text style={className`font-bold text-[18px]`}>{new Date(r.departureTime).toLocaleString()}</Text>
+</View>
+) : null}
+
 
                     </View>
-</View>
-
-<View >
-
-
-{
-    r.location_details.map((location) => (
-        <View key={location.id } style={className`flex flex-col bg-[#FAFAFA]`}>
-
-    
-        <View style={className`flex flex-row 
-         items-center justify-between gap-[10px] w-full  p-3`}>
-
-<View style={className`flex flex-col gap-1 py-4`}>
-
-<View style={className`flex flex-row gap-1`}>
-    <Image source={location.image}  alt=""
-    style={className``}  />
-    <Text style={className`text-[14px] font-bold`}>{location.first_location}</Text>
-</View>
-
-<Text style={className`text-[12px] font-bold text-[#434343]`}>{location.first_direction}</Text>
-</View>
-
-<View>
-    <Text style={className`font-bold text-[18px]`}>{location.time}</Text>
-</View>
-
-
-        </View>
-
-{
-    location.view &&    
-    <View style={className`bg-black rounded-lg flex flex-row items-center justify-center
-     max-w-[113px] h-[32px] w-full mx-3 gap-1`}>
-    <Text style={className`text-[12px] font-bold text-white`}>{location.view}</Text>
-    <Image source={routes_arrow}  alt=""
-    style={className`w-[20px] h-[20px]`}  />
-    </View>
-}
-     
-
-        </View>
-    ))
-}
-
 </View>
 
 <View style={className`w-full flex flex-row items-center justify-center bg-white`}>
@@ -220,7 +165,7 @@ style={className`w-[361px] h-[46px] bg-[#245AB0] flex items-center justify-cente
 :
 
 <TouchableOpacity
- onPress={() => route.push({pathname: "/(passenger)/confirmRide/[id]", params: {id: r.id}})}
+ onPress={() => route.push({pathname: "/(passenger)/confirmRide/[id]", params: {id: rideId}})}
 style={className`w-[361px] h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px]  `}>
     <Text style={className`text-white text-[16px]`}>Request To Join</Text>
 </TouchableOpacity>
@@ -230,8 +175,9 @@ style={className`w-[361px] h-[46px] bg-[#245AB0] flex items-center justify-cente
 </View>
 
                 </View>
-            ))
-        }
+              );
+            })
+        )}
       </View>
 
       </ScrollView>

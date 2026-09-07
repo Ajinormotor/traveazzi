@@ -30,7 +30,13 @@ interface RideState {
   getAllRides: () => Promise<any>
   singleRides: (id: string) => Promise<any>
   startRides: (id: string) => Promise<any>
-  getRideBySearch: () => Promise<any>
+  getRideBySearch: (params: {
+    origin: { lat: number; lon: number };
+    destination: { lat: number; lon: number };
+    departureDate: string;
+    seatsNeeded: number;
+  }) => Promise<any>;
+  geocodeAddress: (address: string) => Promise<{ lat: number; lng: number } | null>;
   addVehicle: (vehicelData: VehiclePayload) => Promise<boolean>
   allVehicle: () => Promise<any>
   getPassengerRides: (id: string) => Promise<any> 
@@ -162,29 +168,50 @@ createRide: async (rideData) => {
       set({ loading: false });
     }
   },
-  getRideBySearch: async() => {
-       set({ loading: true });
+  geocodeAddress: async (address) => {
     try {
-      const response = await axios.get(`${Base_Url}/rides/search`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
+      const token = useAuthStore.getState().token;
+      const response = await axios.get(`${Base_Url}/geolocation/geocode`, {
+        params: { address },
+        headers: { Authorization: `Bearer ${token}` },
       });
-      
-    set({ rides: response.data?.data })
-    console.log('Searched result:', response.data.data)
-
-
-
+      const payload = response.data?.data ?? response.data;
+      if (typeof payload?.lat === 'number' && typeof payload?.lng === 'number') {
+        return { lat: payload.lat, lng: payload.lng };
+      }
+      return null;
     } catch (error: any) {
-      console.error("Error creating ride:", error?.response?.data || error);
       Toast.show({
-        type: "error",
-        text1: "Failed to search rides",
+        type: 'error',
+        text1: error?.response?.data?.message ?? 'Could not locate that address',
+      });
+      return null;
+    }
+  },
+  getRideBySearch: async (params) => {
+    set({ loading: true });
+    try {
+      const token = useAuthStore.getState().token;
+      const response = await axios.get(`${Base_Url}/rides/search`, {
+        params: {
+          'origin[lat]': params.origin.lat,
+          'origin[lon]': params.origin.lon,
+          'destination[lat]': params.destination.lat,
+          'destination[lon]': params.destination.lon,
+          departureDate: params.departureDate,
+          seatsNeeded: params.seatsNeeded,
+        },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      set({ rides: response.data?.data ?? [] });
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text1: error?.response?.data?.message ?? 'Failed to search rides',
       });
     } finally {
       set({ loading: false });
     }
-
   },
 
   addVehicle : async (vehicleData) => {
