@@ -42,6 +42,7 @@ const { payBookings } = usePassengerStore();
 
 const [rideDetails, setRideDetails] = useState<any>(null);
 const [isLoading, setIsLoading] = useState(false);
+const [isPaying, setIsPaying] = useState(false);
 const [showReport, setShowReport] = useState(false);
 
 
@@ -79,8 +80,14 @@ if (!rideDetails) return <View style={[className`flex-1 items-center justify-cen
 const item = rideDetails;
 
 const handlePay = async () => {
-  await payBookings(item._id);
-  route.push('/(passenger)/home')
+  if (isPaying) return;
+  setIsPaying(true);
+  try {
+    await payBookings(item._id);
+    route.push('/(passenger)/home')
+  } finally {
+    setIsPaying(false);
+  }
 };
 
   return (
@@ -384,10 +391,14 @@ style={className`flex flex-col gap-3`}
     </View>
 }
 
- { item?.status === 'COOMPLETED' &&    <View style={className`flex flex-row gap-1 `}>
-        <TouchableOpacity  onPress={() => setShowReport(!showReport)}
-         style={className`bg-[#245AB0] w-[271px] h-[44px] flex items-center justify-center rounded-lg`}>
-            <Text style={className`text-white`}>Pay Now</Text>
+  { item?.status === 'COMPLETED' &&    <View style={className`flex flex-row gap-1 `}>
+        <TouchableOpacity  onPress={handlePay} disabled={isPaying}
+          style={className`bg-[#245AB0] w-[271px] h-[44px] flex items-center justify-center rounded-lg ${isPaying ? 'opacity-60' : ''}`}>
+            {isPaying ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={className`text-white`}>Pay Now</Text>
+            )}
         </TouchableOpacity>
 
         <View style={className`flex flex-row items-center justify-center border-[1px] border-[#E4EFFF]

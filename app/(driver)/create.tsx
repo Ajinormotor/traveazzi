@@ -121,7 +121,8 @@ const handleCreateRide = async () => {
     !departureTime ||
     !departureDate ||
     !pricePerSeat ||
-    !selectedSeat
+    !selectedSeat ||
+    !vehicleId
   ) {
     Toast.show({
       type: 'error',
@@ -164,7 +165,7 @@ if (!combinedDate.isValid()) {
   const availableSeats = Number(selectedSeat);
   const price = Number(pricePerSeat);
 
-  if (isNaN(availableSeats) || isNaN(price)) {
+  if (isNaN(availableSeats) || isNaN(price) || price < 0) {
     Toast.show({
       type: 'error',
       text1: 'Invalid price or seat number',
@@ -428,6 +429,7 @@ if (!combinedDate.isValid()) {
                     placeholder="Enter price"
                     value={pricePerSeat}
                     onChangeText={setPricePerSeat}
+                    keyboardType="numeric"
                     style={className`flex-1 ml-2`}
                   />
                 </View>

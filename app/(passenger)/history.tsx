@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Image,
   ScrollView,
   Text,
@@ -19,7 +20,7 @@ import downs from "../../assets/images/down_arrow.png";
 import dayjs from "dayjs";
 import { Link, router, useRouter } from "expo-router";
 import { useAuthStore } from "@/store/authStore";
-import { useDriverRideStore } from "@/store/driverStore";
+import { usePassengerStore } from "@/store/passengerStore";
 import { getStatusColor } from "@/constants/statusColor";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
@@ -41,7 +42,33 @@ const History = () => {
 
 
   const { logout } = useAuthStore();
-    const { rides, getAllRides } = useDriverRideStore();
+  const { getMyBookings } = usePassengerStore();
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchBookings = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const list = await getMyBookings();
+      const normalized = Array.isArray(list)
+        ? list
+        : Array.isArray(list?.data)
+          ? list.data
+          : [];
+      setBookings(normalized);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load trip history. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBookings();
+  }, []);
 
 
   return (
@@ -90,11 +117,35 @@ const History = () => {
             style={className`flex flex-col gap-3 min-h-[200px]`}
           >
             <View style={className`mt-3`}>
-              {rides && rides.length > 0 ? (
+              {isLoading ? (
+                <View
+                  style={className`flex-1 flex items-center justify-center min-h-[200px]`}
+                >
+                  <ActivityIndicator size={40} color="#000" />
+                </View>
+              ) : error ? (
+                <View
+                  style={className`flex-1 flex flex-col items-center justify-center min-h-[200px] gap-3`}
+                >
+                  <Text
+                    style={className`text-[#AAAAAA] text-base font-bold text-center`}
+                  >
+                    {error}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={fetchBookings}
+                    style={className`bg-[#245AB0] px-6 h-[44px] flex items-center justify-center rounded-[6px]`}
+                  >
+                    <Text style={className`text-white text-[16px]`}>Retry</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : bookings && bookings.length > 0 ? (
                 <View style={className`flex flex-col gap-4`}>
-                  {rides.map((rider: any) => (
+                  {bookings.map((booking: any) => {
+                    const ride = booking.ride ?? {};
+                    return (
                     <TouchableOpacity
-                      key={rider._id}
+                      key={booking._id}
                       // onPress={() => router.push(`/${rider._id}/startRide`)}
                     >
                       <View
@@ -107,12 +158,12 @@ const History = () => {
                             style={[
                               className`py-1 px-3 rounded-full self-start mt-3 `,
                               {
-                                backgroundColor: getStatusColor(rider.status),
+                                backgroundColor: getStatusColor(booking.status),
                               },
                             ]}
                           >
                             <Text style={className`text-white text-xs font-bold`}>
-                              {rider.status}
+                              {booking.status}
                             </Text>
                           </View>
                           
@@ -121,7 +172,7 @@ const History = () => {
                           <View style={className`flex flex-row gap-1 pt-3`}>
                             <Image source={up} style={className``} />
                             <Text style={className`text-[14px] font-bold`}>
-                              {rider.originAddress}
+                              {ride.originAddress ?? booking.pickupAddress ?? ''}
                             </Text>
                           </View>
 
@@ -136,7 +187,7 @@ const History = () => {
                               <Text
                                 style={className`text-[12px] font-bold text-[#8C8C8C]`}
                               >
-                                {dayjs(rider.departureTime).format(
+                                {dayjs(ride.departureTime ?? booking.createdAt).format(
                                   "MMM D, YYYY h:mm A"
                                 )}
                               </Text>
@@ -147,7 +198,7 @@ const History = () => {
                             <Text
                               style={className`text-[#008000] text-sm font-semibold`}
                             >
-                              ₦{rider.pricePerSeat}
+                              ₦{booking.totalPrice ?? ride.pricePerSeat ?? ''}
                             </Text>
                           </View>
 
@@ -155,7 +206,7 @@ const History = () => {
                           <View style={className`flex flex-row gap-1 py-3`}>
                             <Image source={downs} style={className``} />
                             <Text style={className`text-[14px] font-bold`}>
-                              {rider.destinationAddress}
+                              {ride.destinationAddress ?? booking.dropoffAddress ?? ''}
                             </Text>
                           </View>
 
@@ -163,7 +214,8 @@ const History = () => {
                         </View>
                       </View>
                     </TouchableOpacity>
-                  ))}
+                    );
+                  })}
                 </View>
               ) : (
                 <View
@@ -172,7 +224,7 @@ const History = () => {
                   <Text
                     style={className`text-[#AAAAAA] text-2xl font-bold text-center`}
                   >
-                    No rides available
+                    No trip history yet
                   </Text>
                 </View>
               )}

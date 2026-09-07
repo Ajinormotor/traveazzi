@@ -107,17 +107,40 @@ useEffect(() => {
 
 // console.log('Start Ride Passenger User:', passengerUser);
 
-const [showRej, setShowRej]  = useState(false); 
+const [actionId, setActionId]  = useState<string | null>(null);
 
-const handleReject = async(id: string) => {
-  await rejectPassengerRides(id)
-  setShowRej(!showRej)
+const refetchPassengers = async () => {
+  const rideId = Array.isArray(id) ? id[0] : id;
+  if (typeof rideId !== 'string') return;
+  try {
+    const result = await getPassengerRides(rideId);
+    if (result?.data) setPassengerUser(result.data);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const handleReject = async(bookingId: string) => {
+  if (actionId) return;
+  setActionId(bookingId);
+  try {
+    await rejectPassengerRides(bookingId)
+    await refetchPassengers()
+  } finally {
+    setActionId(null)
+  }
 }
 
 
-const handleAccept = async(id: string) => {
-  await acceptPassengerRides(id)
-  setShowRej(!showRej)
+const handleAccept = async(bookingId: string) => {
+  if (actionId) return;
+  setActionId(bookingId);
+  try {
+    await acceptPassengerRides(bookingId)
+    await refetchPassengers()
+  } finally {
+    setActionId(null)
+  }
 }
 
 
@@ -331,25 +354,33 @@ style={className`flex flex-col gap-3  `}>
 
 
 {/* Acceppt /reject Button */}
-{ booking.status === 'PENDING'   && showRej &&
+{ booking.status === 'PENDING' &&
 <View
 
   style={[ className`flex flex-row gap-2 items-center `]}
 >
 
-         <TouchableOpacity onPress={() => handleReject(booking._id)  }>
+         <TouchableOpacity onPress={() => handleReject(booking._id)} disabled={actionId === booking._id}>
          
-          <View style={className`flex flex-row items-center justify-center bg-[#DC3545] w-[71px] h-[35px] rounded-[8px]`}>
-            <Text style={className`text-white text-sm font-bold`}>Reject</Text>
+          <View style={className`flex flex-row items-center justify-center bg-[#DC3545] w-[71px] h-[35px] rounded-[8px] ${actionId === booking._id ? 'opacity-60' : ''}`}>
+            {actionId === booking._id ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <Text style={className`text-white text-sm font-bold`}>Reject</Text>
+            )}
           </View>
            </TouchableOpacity> 
            
 
-  <TouchableOpacity onPress={() => handleAccept(booking._id)  }>
+  <TouchableOpacity onPress={() => handleAccept(booking._id)} disabled={actionId === booking._id}>
 
 
-          <View style={className`flex flex-row items-center justify-center bg-[#28A745] w-[71px] h-[35px] rounded-[8px]`}>
-            <Text style={className`text-white text-sm font-bold`}>Accept</Text>
+          <View style={className`flex flex-row items-center justify-center bg-[#28A745] w-[71px] h-[35px] rounded-[8px] ${actionId === booking._id ? 'opacity-60' : ''}`}>
+            {actionId === booking._id ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <Text style={className`text-white text-sm font-bold`}>Accept</Text>
+            )}
           </View>
 
           </TouchableOpacity>
