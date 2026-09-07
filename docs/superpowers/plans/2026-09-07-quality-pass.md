@@ -164,7 +164,7 @@ The Task 2 rewrite pushes results to the deleted `/rideDetails/[id]`. Change tha
 
 - [ ] **Step 4: Layout cleanup**
 
-In `app/_layout.tsx`, remove `authIndex` from `PUBLIC_SEGMENTS` if present. Remove any `Stack.Screen` entries pointing at deleted routes.
+In `app/_layout.tsx`, remove `authIndex` from `PUBLIC_SEGMENTS` if present. Remove any `Stack.Screen` entries pointing at deleted routes. Task 1 registered `signin`/`register` group screens whose directories have no `_layout.tsx` (export warns "No route named signin/register exists"): create `app/signin/_layout.tsx` registering `Stack.Screen` entries for `login` and `loginOtp`, and `app/register/_layout.tsx` registering `register` and `registerOtp`, both with `headerShown: false` like the other group layouts.
 
 - [ ] **Step 5: Stub screens get real empty-states (no backend needed)**
 
