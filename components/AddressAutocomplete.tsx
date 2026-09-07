@@ -13,6 +13,10 @@ import { useDriverRideStore } from '@/store/driverStore';
 
 type Suggestion = { description: string; placeId: string };
 
+// Kill-switch: when false the field behaves like a plain TextInput and no
+// suggestion requests leave the device. Flip back to true to re-enable.
+const AUTOCOMPLETE_ENABLED = false;
+
 type Props = {
   value: string;
   onChange: (text: string) => void;
@@ -36,7 +40,7 @@ export default function AddressAutocomplete({ value, onChange, placeholder, inpu
 
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current);
-    if (value.trim().length < 2) {
+    if (!AUTOCOMPLETE_ENABLED || value.trim().length < 2) {
       reqId.current += 1;
       setSuggestions([]);
       setLoading(false);
@@ -86,8 +90,8 @@ export default function AddressAutocomplete({ value, onChange, placeholder, inpu
         placeholder={placeholder}
         style={[className`max-w-[85%] w-full bg-transparent text-[16px]`, inputStyle]}
       />
-      {loading && <ActivityIndicator size="small" color="#245AB0" />}
-      {focused && suggestions.length > 0 && (
+      {AUTOCOMPLETE_ENABLED && loading && <ActivityIndicator size="small" color="#245AB0" />}
+      {AUTOCOMPLETE_ENABLED && focused && suggestions.length > 0 && (
         <FlatList
           data={suggestions}
           keyExtractor={(item) => item.placeId}
