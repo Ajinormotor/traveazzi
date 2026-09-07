@@ -30,16 +30,24 @@ function buildUrl(props: MapEmbedProps): string | null {
   return `https://www.google.com/maps/embed/v1/view?key=${MAPS_KEY}&center=${c.lat},${c.lng}&zoom=${z}`;
 }
 
+// The Embed API refuses top-level loads ("must be used in an iframe"),
+// so the WebView renders a minimal HTML shell that iframes the embed URL.
+function buildHtml(url: string): string {
+  const src = url.replaceAll('&', '&amp;');
+  return `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/><style>html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#e5e3df}iframe{border:0;width:100%;height:100%;display:block}</style></head><body><iframe src="${src}" allowfullscreen loading="lazy"></iframe></body></html>`;
+}
+
 export default function MapEmbed(props: MapEmbedProps) {
   const [failed, setFailed] = useState(false);
   const url = buildUrl(props);
-  if (!url || failed) {
+  const html = url ? buildHtml(url) : null;
+  if (!html || failed) {
     return <Image source={props.fallback} style={StyleSheet.absoluteFill} resizeMode="cover" />;
   }
   return (
     <View style={StyleSheet.absoluteFill}>
       <WebView
-        source={{ uri: url }}
+        source={{ html }}
         style={{ flex: 1 }}
         javaScriptEnabled
         domStorageEnabled
