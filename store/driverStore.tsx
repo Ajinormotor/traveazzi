@@ -196,8 +196,8 @@ createRide: async (rideData) => {
         params: { input },
         headers: { Authorization: `Bearer ${token}` },
       });
-      const list = response.data?.data ?? [];
-      return Array.isArray(list) ? list : [];
+      const raw = response.data?.data ?? response.data ?? [];
+      return Array.isArray(raw) ? raw : [];
     } catch {
       return [];
     }

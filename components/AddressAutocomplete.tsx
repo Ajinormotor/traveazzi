@@ -25,7 +25,14 @@ export default function AddressAutocomplete({ value, onChange, placeholder, inpu
   const [loading, setLoading] = useState(false);
   const [focused, setFocused] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const blurTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reqId = useRef(0);
+
+  useEffect(() => {
+    return () => {
+      if (blurTimer.current) clearTimeout(blurTimer.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current);
@@ -55,8 +62,10 @@ export default function AddressAutocomplete({ value, onChange, placeholder, inpu
   const select = (s: Suggestion) => {
     reqId.current += 1;
     if (timer.current) clearTimeout(timer.current);
+    if (blurTimer.current) clearTimeout(blurTimer.current);
     setSuggestions([]);
     setLoading(false);
+    setFocused(false);
     onChange(s.description);
     Keyboard.dismiss();
   };
@@ -66,8 +75,14 @@ export default function AddressAutocomplete({ value, onChange, placeholder, inpu
       <TextInput
         value={value}
         onChangeText={onChange}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
+        onFocus={() => {
+          if (blurTimer.current) clearTimeout(blurTimer.current);
+          setFocused(true);
+        }}
+        onBlur={() => {
+          if (blurTimer.current) clearTimeout(blurTimer.current);
+          blurTimer.current = setTimeout(() => setFocused(false), 150);
+        }}
         placeholder={placeholder}
         style={[className`max-w-[85%] w-full bg-transparent text-[16px]`, inputStyle]}
       />
