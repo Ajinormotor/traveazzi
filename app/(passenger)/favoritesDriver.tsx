@@ -3,16 +3,8 @@ import React, { useCallback, useEffect, useState } from 'react'
 import className from 'twrnc'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { usePassengerStore } from '@/store/passengerStore'
+import { resolveDriverId } from '@/lib/favorites'
 import userOne from "../../assets/images/user_logo img (1).png"
-
-// Same driver-id derivation as rides.tsx heart toggle:
-// populated object -> ._id, raw id string -> itself,
-// flat id fields -> themselves, otherwise undefined.
-const getDriverId = (entry: any): string | undefined => {
-  const d = entry?.driver;
-  if (typeof d === 'object' && d !== null) return d?._id;
-  return d ?? entry?.driverId ?? entry?.driver_id ?? undefined;
-};
 
 const getDriverName = (entry: any): string => {
   const d = typeof entry?.driver === 'object' && entry?.driver !== null ? entry.driver : entry;
@@ -21,9 +13,10 @@ const getDriverName = (entry: any): string => {
 };
 
 const FavoritesDriver = () => {
-  const { favorites, getFavoriteDrivers, removeFavoriteDriver } = usePassengerStore();
+  const { getFavoriteDrivers, removeFavoriteDriver } = usePassengerStore();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [drivers, setDrivers] = useState<any[]>([]);
   const [pendingId, setPendingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -31,10 +24,12 @@ const FavoritesDriver = () => {
     setError(null);
     try {
       const list = await getFavoriteDrivers();
-      // Store resolves [] on failure (toast shown there); a nullish
-      // result means the call itself broke — surface error + Retry.
-      if (list == null) {
+      // Branch on the fetch result: null means the request failed
+      // (toast shown in the store) -> error + Retry UI.
+      if (list === null) {
         setError('Failed to load favorites. Please try again.');
+      } else {
+        setDrivers(Array.isArray(list) ? list : []);
       }
     } catch {
       setError('Failed to load favorites. Please try again.');
@@ -52,7 +47,10 @@ const FavoritesDriver = () => {
     setPendingId(driverId);
     try {
       const ok = await removeFavoriteDriver(driverId);
-      if (ok) await getFavoriteDrivers();
+      if (ok) {
+        const refreshed = await getFavoriteDrivers();
+        if (refreshed !== null) setDrivers(Array.isArray(refreshed) ? refreshed : []);
+      }
     } finally {
       setPendingId(null);
     }
@@ -80,7 +78,7 @@ const FavoritesDriver = () => {
     );
   }
 
-  const list = Array.isArray(favorites) ? favorites : [];
+  const list = drivers;
 
   if (list.length === 0) {
     return (
@@ -97,7 +95,7 @@ const FavoritesDriver = () => {
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={className`flex flex-col gap-3`}>
           {list.map((entry: any, index: number) => {
-            const driverId = getDriverId(entry);
+            const driverId = resolveDriverId(entry);
             const key = entry?._id ?? driverId ?? `fav-${index}`;
             const driver = typeof entry?.driver === 'object' && entry?.driver !== null ? entry.driver : entry;
             const vehicle = driver?.vehicle;

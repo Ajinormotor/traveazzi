@@ -25,7 +25,7 @@ interface PassengerState {
   cancelBooking: (bookingId: string) => Promise<boolean>;
   bookings: string[];
   favorites: any[];
-  getFavoriteDrivers: () => Promise<any>;
+  getFavoriteDrivers: () => Promise<any[] | null>;
   addFavoriteDriver: (driverId: string) => Promise<boolean>;
   removeFavoriteDriver: (driverId: string) => Promise<boolean>;
 }
@@ -234,7 +234,7 @@ requestBookings: async (payload) => {
         type: 'error',
         text1: error?.response?.data?.message ?? 'Failed to load favorites',
       });
-      return [];
+      return null;
     }
   },
 

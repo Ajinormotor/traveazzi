@@ -16,6 +16,7 @@ import { Link, useRouter, useLocalSearchParams } from 'expo-router'
 import { useAuthStore } from '@/store/authStore'
 import { useDriverRideStore } from '@/store/driverStore'
 import { usePassengerStore } from '@/store/passengerStore'
+import { resolveDriverId } from '@/lib/favorites'
 
 
 import dayjs from 'dayjs';
@@ -42,16 +43,11 @@ useEffect(() => {
   getFavoriteDrivers()
 },[])
 
-// Driver ids of favorited drivers (favorites entries carry a populated
-// driver object; fall back to flat shapes if the backend returns those).
+// Driver ids of favorited drivers, resolved with the shared
+// lib/favorites helper (fail-closed: no derivable id -> no heart).
 const favoriteDriverIds = new Set(
   (Array.isArray(favorites) ? favorites : [])
-    .map((f: any) => {
-      const d = f?.driver;
-      if (typeof d === 'object' && d !== null) return d?._id;
-      return d ?? f?.driverId ?? f?.driver_id
-        ?? (f && f?.driver === undefined && (f?.firstName || f?.lastName || f?.name) ? f?._id : undefined);
-    })
+    .map((f: any) => resolveDriverId(f))
     .filter((id): id is string => typeof id === 'string' && id.length > 0),
 );
 
@@ -192,9 +188,7 @@ showsVerticalScrollIndicator={false}
       <View style={className`flex flex-col gap-3`}>
         {
             searchResults.map((r: any) => {
-              const driverId = typeof r.driver === 'object' && r.driver !== null
-                ? r.driver?._id
-                : (r.driver ?? r.driverId ?? r.driver_id);
+              const driverId = resolveDriverId(r);
               const hasDriverId = typeof driverId === 'string' && driverId.length > 0;
               const isFav = hasDriverId && favoriteDriverIds.has(driverId);
               const favPending = hasDriverId && pendingFavId === driverId;
@@ -239,7 +233,7 @@ showsVerticalScrollIndicator={false}
 </View>
 
 <View style={className`flex flex-row items-center gap-3`}>
-{hasDriverId ? (
+{driverId ? (
 <TouchableOpacity onPress={() => handleFavoriteToggle(driverId, isFav)} disabled={!!favPending}
   style={className`${favPending ? 'opacity-60' : ''}`}>
     {favPending ? (
