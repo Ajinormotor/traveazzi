@@ -3,6 +3,7 @@ import { Dimensions, FlatList, Image, KeyboardAvoidingView, Platform, ScrollView
 import React, { useState } from 'react'
 import className from 'twrnc'
 import MapEmbed from '@/components/MapEmbed';
+import AddressAutocomplete from '@/components/AddressAutocomplete';
 
 
 import cancel from "../../assets/images/cancel.png"
@@ -145,7 +146,7 @@ const handleAvailability = async () => {
      <TouchableOpacity style={className`w-[361px] w-full h-[46px] bg-[#F6F6F6] rounded-[8px] w-full flex flex-row items-center 
        px-2 gap-3 `}>
         <Image source={gps}  style={className``}  />
-        <TextInput  placeholder='Legend Hotel Lagos Airport, Curio collection'  value={origin} onChangeText={setOrigin} style={className`max-w-[85%] w-full bg-transparent text-[16px]`}  />
+        <AddressAutocomplete  value={origin} onChange={setOrigin} placeholder='Legend Hotel Lagos Airport, Curio collection' inputStyle={className`max-w-[85%] w-full bg-transparent text-[16px]`}  />
      
      </TouchableOpacity>
 
@@ -153,11 +154,11 @@ const handleAvailability = async () => {
         style={className`w-[361px] w-full h-[46px] bg-[#F6F6F6] rounded-[8px] w-full flex flex-row items-center 
        px-2  gap-3`}>
         <Ionicons name='search' color="black" size={20} style={className``}  />
-        <TextInput  placeholder='University of benin'  
+        <AddressAutocomplete
         value={destination}
-        onChangeText={setDestination}
-        onSubmitEditing={handleSearch}
-        style={className`max-w-[82%] w-full bg-transparent text-[16px]`}  />
+        onChange={setDestination}
+        placeholder='University of benin'
+        inputStyle={className`max-w-[82%] w-full bg-transparent text-[16px]`}  />
         <Image source={gps}  style={className``}  />
         
      </TouchableOpacity>

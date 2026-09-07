@@ -3,6 +3,7 @@ import { ActivityIndicator, Dimensions, FlatList, Image, KeyboardAvoidingView, P
 import React, { useEffect, useState } from 'react'
 import className from 'twrnc'
 import MapEmbed from '@/components/MapEmbed';
+import AddressAutocomplete from '@/components/AddressAutocomplete';
 
 
 import cancel from "../../assets/images/cancel.png"
@@ -311,12 +312,12 @@ if (!combinedDate.isValid()) {
               <View style={className`flex flex-col gap-3`}>
                 <TouchableOpacity style={className`w-full h-[46px] bg-[#F6F6F6] rounded-[8px] px-2 flex flex-row items-center gap-3`}>
                   <Image source={gps} />
-                  <TextInput
+                  <AddressAutocomplete
                     placeholder="Pick up address"
-                    style={className`max-w-[85%] w-full bg-transparent text-[16px]
+                    inputStyle={className`max-w-[85%] w-full bg-transparent text-[16px]
                      `}
                     value={originAddress}
-                    onChangeText={setOriginAddress}
+                    onChange={setOriginAddress}
                   />
                 </TouchableOpacity>
 
@@ -326,11 +327,11 @@ if (!combinedDate.isValid()) {
                      flex flex-row items-center gap-3`}
                 >
                   <Ionicons name="search" size={20} color="black" />
-                  <TextInput
+                  <AddressAutocomplete
                     placeholder="Drop off address"
                     value={destinationAddress}
-                    onChangeText={setDestinationAddress}
-                    style={className`max-w-[80%] w-full bg-transparent 
+                    onChange={setDestinationAddress}
+                    inputStyle={className`max-w-[80%] w-full bg-transparent 
                       text-[16px] `}
                   />
                   <Image source={dropIcon} />
