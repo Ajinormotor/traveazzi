@@ -22,6 +22,7 @@ interface PassengerState {
   getMyBookings: (options?: { silent?: boolean }) => Promise<any>;
   submitRating: (bookingId: string, score: number, comment?: string) => Promise<any>;
   payBookings: (id: string) => Promise<any>;
+  cancelBooking: (bookingId: string) => Promise<boolean>;
   bookings: string[];
 }
 
@@ -173,28 +174,46 @@ requestBookings: async (payload) => {
     set({ loading: true });
     try {
       const token = useAuthStore.getState().token;
-
       const response = await axios.post(`${Base_Url}/passenger/bookings/${bookingId}/pay`, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
       set({ loading: false });
-      Toast.show({
-        type: "success",
-        text1: "Payment successful",
-      });
-      return response.data;
+      return (response.data?.data ?? {}) as {
+        authorization_url?: string;
+        reference?: string;
+        access_code?: string;
+      };
     } catch (error: any) {
-      console.error("Error processing payment:", error?.response?.data || error);
       Toast.show({
-        type: "error",
-        text1: "Payment failed",
+        type: 'error',
+        text1: error?.response?.data?.message ?? 'Payment initialization failed',
       });
       set({ loading: false });
+      return null;
     }
-  } 
+  },
+
+  cancelBooking: async (bookingId: string) => {
+    try {
+      const token = useAuthStore.getState().token;
+      const response = await axios.patch(
+        `${Base_Url}/passenger/bookings/${bookingId}/cancel`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      Toast.show({
+        type: 'success',
+        text1: response.data?.message ?? 'Booking cancelled',
+      });
+      return true;
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text1: error?.response?.data?.message ?? 'Failed to cancel booking',
+      });
+      return false;
+    }
+  },
 
 
 }))

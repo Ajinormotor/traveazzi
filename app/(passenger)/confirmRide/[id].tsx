@@ -34,10 +34,11 @@ const { id } = useLocalSearchParams();
 const route = useRouter();
 
 const { rides, singleRides } = useDriverRideStore();
-const { requestBookings } = usePassengerStore(); 
+const { requestBookings, getMyBookings, cancelBooking } = usePassengerStore(); 
 
 const [rideDetails, setRideDetails] = useState<any>(null);
 const [isLoading, setIsLoading] = useState(false)
+const [isCancelling, setIsCancelling] = useState(false);
 const [fetchError, setFetchError] = useState<string | null>(null);
 
 const fetchingSingleRide = async () => {
@@ -118,6 +119,26 @@ const handleConfirm = async () => {
     }
 };
 
+const handleCancel = async () => {
+  if (isCancelling) return;
+  setIsCancelling(true);
+  try {
+    const list = (await getMyBookings({ silent: true })) ?? [];
+    const match = list.find((b: any) => {
+      const rid = b?.ride?._id ?? (typeof b?.rideId === 'object' ? b?.rideId?._id : b?.rideId);
+      return rid === item?._id;
+    });
+    if (!match?._id) {
+      route.back();
+      return;
+    }
+    const ok = await cancelBooking(match._id);
+    if (ok) route.back();
+  } finally {
+    setIsCancelling(false);
+  }
+};
+
 
   return (
  
@@ -185,12 +206,16 @@ style={className`flex flex-col gap-3`}
         <Text style={className`text-white`}>Share Ride details</Text>
     </TouchableOpacity>
 
-    { item?.status === 'SCHEDULED' ? <TouchableOpacity  onPress={() => route.back()}
+    { item?.status === 'SCHEDULED' ? <TouchableOpacity  onPress={handleCancel} disabled={isCancelling}
     style={className`w-[175px] h-[36px] flex flex-row  items-center justify-center
-         gap-2 rounded-lg bg-[#DC3545]`}>
+         gap-2 rounded-lg bg-[#DC3545] ${isCancelling ? 'opacity-60' : ''}`}>
         <Image source={white_cancel}  alt=''
         style={className`flex flex-row items-center justify-center` } />
-        <Text style={className`text-white`}>Cancel Ride</Text>
+        {isCancelling ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={className`text-white`}>Cancel Ride</Text>
+        )}
     </TouchableOpacity>
 
     :

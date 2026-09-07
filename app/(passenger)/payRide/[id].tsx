@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { usePassengerStore } from '@/store/passengerStore'
 import { useDriverRideStore } from '@/store/driverStore'
 import Toast from 'react-native-toast-message'
+import * as WebBrowser from 'expo-web-browser';
 
 import userOne from "../../../assets/images/user_logo img (1).png"
 import dayjs from 'dayjs'
@@ -38,7 +39,7 @@ const { id } = useLocalSearchParams();
 const route = useRouter();
 
 const { rides, singleRides } = useDriverRideStore();
-const { payBookings } = usePassengerStore();
+const { payBookings, getMyBookings } = usePassengerStore();
 
 const [rideDetails, setRideDetails] = useState<any>(null);
 const [isLoading, setIsLoading] = useState(false);
@@ -102,17 +103,46 @@ if (!rideDetails) return <View style={[className`flex-1 items-center justify-cen
 
 const item = rideDetails;
 
+const findBookingId = async (): Promise<string | null> => {
+  const list = (await getMyBookings({ silent: true })) ?? [];
+  const match = list.find((b: any) => {
+    const rid = b?.ride?._id ?? (typeof b?.rideId === 'object' ? b?.rideId?._id : b?.rideId);
+    return rid === rideDetails?._id;
+  });
+  return match?._id ?? null;
+};
+
 const handlePay = async () => {
   if (isPaying) return;
   setIsPaying(true);
   try {
-    await payBookings(item._id);
-    route.push('/(passenger)/home')
+    const bookingId = await findBookingId();
+    if (!bookingId) {
+      Toast.show({ type: 'error', text1: 'No booking found for this ride yet' });
+      return;
+    }
+    const init = await payBookings(bookingId);
+    if (!init?.authorization_url) {
+      throw new Error('No payment page returned. Please try again.');
+    }
+    await WebBrowser.openBrowserAsync(init.authorization_url);
+    const deadline = Date.now() + 60000;
+    let paid = false;
+    while (Date.now() < deadline) {
+      await new Promise((res) => setTimeout(res, 5000));
+      const list = (await getMyBookings({ silent: true })) ?? [];
+      const current = list.find((b: any) => b?._id === bookingId);
+      if (current?.paymentStatus === 'PAID') { paid = true; break; }
+      if (current?.paymentStatus === 'FAILED') break;
+    }
+    if (paid) {
+      Toast.show({ type: 'success', text1: 'Payment successful' });
+      route.push('/(passenger)/home');
+    } else {
+      Toast.show({ type: 'error', text1: 'Payment not confirmed yet. Please try again.' });
+    }
   } catch (error: any) {
-    Toast.show({
-      type: 'error',
-      text1: error?.response?.data?.message ?? error?.message ?? 'Payment failed. Please try again.',
-    });
+    Toast.show({ type: 'error', text1: error?.message ?? 'Payment failed. Please try again.' });
   } finally {
     setIsPaying(false);
   }
