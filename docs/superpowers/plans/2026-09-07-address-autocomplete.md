@@ -378,7 +378,7 @@ Read the file first (required). Replace ONLY the two address `TextInput` element
 <AddressAutocomplete
   value={origin}
   onChange={setOrigin}
-  placeholder='Legend Hotel Lagos Airport, Curio collection'
+  placeholder='Legend Hotel Lagos Airport, Curio'
 />
 ```
 

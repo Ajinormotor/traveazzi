@@ -150,7 +150,7 @@ const handleAvailability = async () => {
      <TouchableOpacity style={className`w-[361px] w-full h-[46px] bg-[#F6F6F6] rounded-[8px] w-full flex flex-row items-center 
        px-2 gap-3 `}>
         <Image source={gps}  style={className``}  />
-        <AddressAutocomplete  value={origin} onChange={setOrigin} placeholder='Legend Hotel Lagos Airport, Curio collection' inputStyle={className`max-w-[85%] w-full bg-transparent text-[16px]`}  />
+        <AddressAutocomplete  value={origin} onChange={setOrigin} placeholder='Legend Hotel Lagos Airport, Curio' inputStyle={className`max-w-[85%] w-full bg-transparent text-[16px]`}  />
      
      </TouchableOpacity>
 

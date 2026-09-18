@@ -132,7 +132,7 @@ const handleLogout = async() => {
      {/* <TouchableOpacity style={className`w-[361px] w-full h-[46px] bg-[#F6F6F6] rounded-[8px] w-full flex flex-row items-center 
        px-2 gap-3 `}>
         <Image source={gps}  style={className``}  />
-        <TextInput  placeholder='Legend Hotel Lagos Airport, Curio collection'  style={className`max-w-[85%] w-full bg-transparent text-[16px]`}  />
+        <TextInput  placeholder='Legend Hotel Lagos Airport, Curio'  style={className`max-w-[85%] w-full bg-transparent text-[16px]`}  />
      
      </TouchableOpacity> */}
 
