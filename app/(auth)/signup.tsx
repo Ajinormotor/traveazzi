@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import className from "twrnc";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
@@ -28,6 +28,13 @@ const Signup = () => {
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [portalType, setPortalType] = useState<"DRIVER" | "PASSENGER">("PASSENGER");
+
+  // Profile completion needs the OTP partial token. If there is none (fresh
+  // install, restart before the persist fix, or deep link), bounce to email
+  // entry instead of stranding the user on a form that cannot submit.
+  useEffect(() => {
+    if (!token) router.replace('/');
+  }, [token]);
 
   const handleSubmit = async () => {
     if (!password || password.length < 6) {
