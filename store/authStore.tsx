@@ -82,6 +82,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
       if (data.success) {
         set({ loading: false, token: data?.data.partialToken });
+        // Persist: without this, an app restart before profile completion
+        // leaves token null and profile/complete gets "Bearer null" (jwt malformed).
+        await AsyncStorage.setItem("token", data?.data.partialToken);
         Toast.show({ type: "success", text1: data?.message || "Valid OTP" });
         // router.push('/(auth)/signup')
         return true;
@@ -108,6 +111,17 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     set({ loading: true });
 
     const { token } = useAuthStore.getState();
+
+    // Never call profile/complete without the OTP partial token: the server
+    // rejects "Bearer null" with `jwt malformed`. Send the user back to OTP.
+    if (!token) {
+      set({ loading: false });
+      Toast.show({
+        type: "error",
+        text1: "Session expired. Please verify your email again.",
+      });
+      return false;
+    }
 
     try {
       if (!firstName || !lastName || !gender || !password || !confirmPassword) {
