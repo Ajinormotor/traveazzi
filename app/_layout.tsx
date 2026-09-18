@@ -5,8 +5,14 @@ import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
+import { LogBox } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+
+// react-native-modal-datetime-picker@18 (latest) still passes the deprecated
+// `onChange` prop to @react-native-community/datetimepicker internally.
+// Silence only that third-party warning until the library migrates.
+LogBox.ignoreLogs(["DateTimePicker: `onChange` is deprecated"]);
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
