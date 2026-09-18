@@ -116,7 +116,7 @@ style={className`flex flex-col gap-3`}
    </TouchableOpacity>
 
 
-<View style={className`flex flex-col gap-[10px] b py-3 `}>
+<View style={className`flex flex-col gap-[10px] py-3 `}>
 
 <View style={className`flex flex-col gap-[10px]`}>
 
