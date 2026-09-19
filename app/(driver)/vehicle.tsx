@@ -88,13 +88,13 @@ style={className`h-[85%] bg-[#FAFAFA] flex-col flex rounded-t-[30px]  gap-7 p-1`
 
      <View style={className`flex flex-row items-center justify-between`}>
 
-     <View style={className`flex flex-row items-center gap-2  relative`}>
-        <Text style={className`text-black text-2xl font-bold`}>Vehicle</Text>
-
-<TouchableOpacity onPress={handleToggle}>
+      <View style={className`flex flex-row items-center gap-2  relative`}>
+        <TouchableOpacity onPress={handleToggle} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          style={className`flex flex-row items-center gap-2 py-2`}>
+          <Text style={className`text-black text-2xl font-bold`}>Vehicle</Text>
           <Image source={down} alt=''
         style={className`w-[12px] h-[7px]`}  />
-</TouchableOpacity>
+        </TouchableOpacity>
 
 {showMenu && (
   <View style={className`

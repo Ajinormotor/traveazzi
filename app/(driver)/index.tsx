@@ -120,11 +120,11 @@ const DriverIndex = () => {
           {/* Header */}
           <View style={className`flex flex-row items-center justify-between`}>
             <View style={className`flex flex-row items-center gap-2 relative`}>
-              <Text style={className`text-black text-2xl font-bold`}>
-                Trip History
-              </Text>
-
-              <TouchableOpacity onPress={handleToggle}>
+              <TouchableOpacity onPress={handleToggle} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                style={className`flex flex-row items-center gap-2 py-2`}>
+                <Text style={className`text-black text-2xl font-bold`}>
+                  Trip History
+                </Text>
                 <Image source={down} style={className`w-[12px] h-[7px]`} />
               </TouchableOpacity>
 

@@ -192,15 +192,15 @@ style={className`flex flex-col gap-3  `}>
 
           <View style={className`flex flex-col items-center 
             justify-start gap-2  relative`}>
-   <View style={className`flex flex-row gap-2 `}>
+    <View style={className`flex flex-row gap-2 `}>
 
-        <Text style={className`text-2xl  font-bold ml-[-38px]`}>
-          Manage ride</Text>
-
-        <TouchableOpacity onPress={handleToggle}>
+        <TouchableOpacity onPress={handleToggle} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          style={className`flex flex-row items-center gap-2 py-2`}>
+          <Text style={className`text-2xl  font-bold ml-[-38px]`}>
+            Manage ride</Text>
           <Image source={down} alt=''
         style={className`w-[12px] h-[7px] mt-3`}  />
-</TouchableOpacity>
+        </TouchableOpacity>
      
       </View>
 
@@ -223,7 +223,7 @@ style={className`flex flex-col gap-3  `}>
     </TouchableOpacity>
 
         <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
-      <Link href="/(driver)/vehicle"
+      <Link href="/(driver)/profile"
       style={className`border-b border-gray-200`}>
       <Text> Profile </Text>
        </Link>
