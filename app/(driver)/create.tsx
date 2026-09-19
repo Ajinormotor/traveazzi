@@ -91,6 +91,7 @@ const CreateRide = () => {
   };
 
    const [isVisible, setIsVisible] = useState(false);
+   const [isTimeVisible, setIsTimeVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
 
 const handleConfirm = (date: any) => {
@@ -401,15 +402,13 @@ if (!combinedDate.isValid()) {
 {/* dEPARTURE tIME */}
                   <View style={className`flex-1`}>
                     <Text style={className`text-[#828282] text-[14px]`}>Select Time</Text>
-                    <View style={className`bg-[#F0F0F0] h-10 px-3 flex-row items-center rounded-[8px]`}>
+                    <TouchableOpacity onPress={() => setIsTimeVisible(true)}
+                      style={className`bg-[#F0F0F0] h-10 px-3 flex flex-row items-center rounded-[8px]`}>
                       <Ionicons name="time-outline" size={20} color="black" />
-                      <TextInput
-                        placeholder="09:00 AM"
-                        value={departureTime}
-                        onChangeText={setDepartureTime}
-                        style={className`flex-1 ml-2  `}
-                      />
-                    </View>
+                      <Text style={className`flex-1 ml-2 ${departureTime ? 'text-black' : 'text-[#AAAAAA]'}`}>
+                        {departureTime || '09:00 AM'}
+                      </Text>
+                    </TouchableOpacity>
                   </View>
 
                 </View>
@@ -423,6 +422,15 @@ if (!combinedDate.isValid()) {
         mode="date"
         onConfirm={handleConfirm}
         onCancel={() => setIsVisible(false)}
+      />
+      <DateTimePickerModal
+        isVisible={isTimeVisible}
+        mode="time"
+        onConfirm={(date: any) => {
+          setDepartureTime(dayjs(date).format('hh:mm A'));
+          setIsTimeVisible(false);
+        }}
+        onCancel={() => setIsTimeVisible(false)}
       />
     </View>
 
@@ -474,11 +482,10 @@ if (!combinedDate.isValid()) {
         <View
           style={className`bg-white border border-gray-300 rounded-[8px] mt-2`}
         >
-          <FlatList
-            data={vehicles}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
+          {(vehicles ?? []).length > 0 ? (
+            (vehicles ?? []).map((item: any) => (
               <TouchableOpacity
+                key={item._id}
                 onPress={() => handleSelect(item)}
                 style={className`p-3 border-b border-gray-100`}
               >
@@ -486,8 +493,12 @@ if (!combinedDate.isValid()) {
                   {item.make} {item.model}
                 </Text>
               </TouchableOpacity>
-            )}
-          />
+            ))
+          ) : (
+            <Text style={className`p-3 text-[#AAAAAA] text-[14px]`}>
+              No vehicles yet — add one in the Vehicle tab
+            </Text>
+          )}
         </View>
       )}
 
