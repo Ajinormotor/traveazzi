@@ -121,7 +121,10 @@ createRide: async (rideData) => {
         },
       });
 
-      set({ rides: response.data.data, loading: false });
+      // NOTE: intentionally does NOT write to `rides` — that holds the
+      // ride LIST for list screens. Overwriting it with a single object
+      // red-screens every `.map`/`.filter` consumer (was scheduleResult:115).
+      set({ loading: false });
 
       // console.log("Fetched Single Rides:", response.data.data);
       return response.data.data;

@@ -12,7 +12,10 @@ import { useRouter } from 'expo-router'
 import { useDriverRideStore } from '@/store/driverStore'
 
 const ScheduleResult = () => {
-const { rides, loading } = useDriverRideStore();
+const { rides: storeRides, loading } = useDriverRideStore();
+// Guard: the shared `rides` slot must always render as a list — a non-array
+// here used to red-screen at rides.map with "undefined is not a function".
+const rides = Array.isArray(storeRides) ? storeRides : [];
 const route = useRouter()
   
 
