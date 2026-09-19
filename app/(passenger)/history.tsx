@@ -92,13 +92,30 @@ const History = () => {
 
           {/* Header */}
           <View style={className`flex flex-row items-center justify-between`}>
-
             <View style={className`flex flex-row items-center gap-2 relative`}>
-              <Text style={className`text-black text-2xl font-bold`}>
-                Trip History
-              </Text>
+              <TouchableOpacity onPress={handleToggle} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                style={className`flex flex-row items-center gap-2 py-2`}>
+                <Text style={className`text-black text-2xl font-bold`}>
+                  Trip History
+                </Text>
+                <Image source={down} style={className`w-[12px] h-[7px]`} />
+              </TouchableOpacity>
 
-            
+              {showMenu && (
+                <View style={className`absolute top-10 left-0 bg-white rounded-[8px] shadow-sm p-2 gap-3 items-center justify-center flex-col w-full z-100`}>
+                  <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
+                    <Link href="/(passenger)/profile" style={className`border-b border-gray-200`}>
+                      <Text>Profile</Text>
+                    </Link>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity onPress={handleLogout}>
+                    <Text style={className`text-red-500 font-bold`}>
+                      Logout
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
 
              <TouchableOpacity
