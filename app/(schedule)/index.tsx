@@ -1,22 +1,18 @@
-import { Dimensions, FlatList, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, 
-  TouchableOpacity, useWindowDimensions, View } from 'react-native'
+import { FlatList, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, 
+  TouchableOpacity, View } from 'react-native'
 import React, { useState } from 'react'
 import className from 'twrnc'
 import dayjs from 'dayjs'
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import MapEmbed from '@/components/MapEmbed';
+import MapSheetScreen from '@/components/MapSheetScreen';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 
 
-import cancel from "../../assets/images/cancel.png"
-import indicator from "../../assets/images/indicator.png"
 import Ionicons from '@expo/vector-icons/Ionicons'
 import gps from "../../assets/images/location-04.png"
-import driver from "../../assets/images/location.png"
 import bg from "../../assets/images/map_bg.png"
-import marker from "../../assets/images/marker.png"
 // 
-import { Link, useRouter } from 'expo-router'
+import { useRouter } from 'expo-router'
 import { useDriverRideStore } from '@/store/driverStore'
 import Toast from 'react-native-toast-message'
 
@@ -28,7 +24,6 @@ const seatData = [
 ]
 
 
-const width = Dimensions.get('window').width;
 
 const Schedule = () => {
 
@@ -67,21 +62,27 @@ const handleAvailability = async () => {
     return;
   }
 
-  const originCoords = await geocodeAddress(origin);
+  // One toast, naming the real cause — see the note in create.tsx.
+  const resolveAddress = async (value: string, label: string) => {
+    try {
+      return await geocodeAddress(value);
+    } catch (err: any) {
+      Toast.show({
+        type: 'error',
+        text1: `Could not locate ${label}`,
+        text2: err?.userMessage ?? 'Please try a fuller address.',
+      });
+      return null;
+    }
+  };
+
+  const originCoords = await resolveAddress(origin, 'the origin address');
   if (!originCoords) {
-    Toast.show({
-      type: 'error',
-      text1: 'Could not locate the origin address',
-    });
     return;
   }
 
-  const destinationCoords = await geocodeAddress(destination);
+  const destinationCoords = await resolveAddress(destination, 'the destination address');
   if (!destinationCoords) {
-    Toast.show({
-      type: 'error',
-      text1: 'Could not locate the destination address',
-    });
     return;
   }
 
@@ -104,28 +105,18 @@ const handleAvailability = async () => {
 
 
 
-     <View style={className`flex-1 `}>
-     <MapEmbed mode="view" fallback={bg} />
+     <MapSheetScreen
+       mode="view"
+       fallback={bg}
+       initialRatio={0.5}
+       minRatio={0.25}
+       maxRatio={0.95}
+       showMarker
+       sheetBackgroundColor="#FFFFFF"
+       sheetContentStyle={styles.sheetContent}
+     >
 
-        <View style={className`h-[30%] relative `}>
-
-<TouchableOpacity style={className`absolute left-[50px] bottom-[50px]`} >
-<Image source={marker}  alt='' style={className`w-[100px] h-[100px]`}   />
-</TouchableOpacity>
-</View>
-
-    <View style={[className`flex-1 flex flex-col gap-3 bg-white p-2 h-1/2`,
-        {width}
-    ]}>
-
-      
-   <TouchableOpacity style={className`w-full flex flex-row items-center justify-center`}>
-   <Image source={indicator}  alt='' style={className`w-[35px] h-1`}  />
-   </TouchableOpacity>
-
-
-
-<ScrollView  style={className`flex flex-col gap-4 `}>
+<ScrollView  style={className`flex-1`} contentContainerStyle={className`gap-4 pb-4`}>
 
 <View  style={className` flex flex-col gap-4`}>
 
@@ -137,9 +128,11 @@ const handleAvailability = async () => {
         <Text style={className`text-[14px] text-[#AAAAAA] font-bold`}>Type a city, landmark, or Address...</Text>
       </View>
 
-    <TouchableOpacity>
-      <Image source={cancel} alt='' style={className`w-[20px] h-[20px]`   }  />
-    </TouchableOpacity>
+   <TouchableOpacity
+     accessibilityLabel="Go back"
+     onPress={() => route.back()}>
+       <Ionicons name="arrow-undo-circle-outline" size={20} />
+   </TouchableOpacity>
 
      </View>
 
@@ -226,7 +219,7 @@ const handleAvailability = async () => {
       style={className`bg-[#F0F0F0] h-10 px-3 flex flex-row items-center rounded-[8px]`}>
       <Ionicons name="calendar-outline" size={20} color="black" />
       <Text style={className`flex-1 ml-2 ${rideDate ? 'text-black' : 'text-[#AAAAAA]'}`}>
-        {rideDate ? dayjs(rideDate).format('MMM DD, YYYY') : 'May 5 2024'}
+        {rideDate ? dayjs(rideDate).format('MMM DD, YYYY') : 'Select date'}
       </Text>
     </TouchableOpacity>
   </View>
@@ -238,7 +231,7 @@ const handleAvailability = async () => {
       style={className`bg-[#F0F0F0] h-10 px-3 flex flex-row items-center rounded-[8px]`}>
       <Ionicons name="time-outline" size={20} color="black" />
       <Text style={className`flex-1 ml-2 ${rideTime ? 'text-black' : 'text-[#AAAAAA]'}`}>
-        {rideTime ? dayjs(rideTime).format('hh:mm A') : '09:51 AM'}
+        {rideTime ? dayjs(rideTime).format('hh:mm A') : 'Select time'}
       </Text>
     </TouchableOpacity>
   </View>
@@ -280,6 +273,10 @@ const handleAvailability = async () => {
       <DateTimePickerModal
         isVisible={showTimePicker}
         mode="time"
+        // Only today is time-boxed: any time is valid on a future date.
+        minimumDate={
+          rideDate && dayjs(rideDate).isSame(dayjs(), 'day') ? new Date() : undefined
+        }
         onConfirm={(date: Date) => {
           setRideTime(date);
           setShowTimePicker(false);
@@ -287,12 +284,15 @@ const handleAvailability = async () => {
         onCancel={() => setShowTimePicker(false)}
       />
 
-    </View>
-    </View>
+     </MapSheetScreen>
 
         </KeyboardAvoidingView>
   )
 }
 
 export default Schedule
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  sheetContent: {
+    padding: 8,
+  },
+})

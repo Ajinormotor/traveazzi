@@ -4,14 +4,12 @@ import React, { useEffect, useState } from 'react'
 
 import bg from "../../assets/images/map_bg.png"
 import className, { style } from 'twrnc'
-import MapEmbed from '@/components/MapEmbed';
-import marker from "../../assets/images/marker.png"
+import MapSheetScreen from '@/components/MapSheetScreen';
 import down from "../../assets/images/down.png"
 
 import { useRouter } from 'expo-router'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import options from "../../assets/images/options.png"
-import indicator from "../../assets/images/indicator.png"
 import { useDriverRideStore } from '@/store/driverStore'
 import { Link } from 'expo-router'
 import { useAuthStore } from '@/store/authStore'
@@ -61,30 +59,18 @@ const handleLogout = async() => {
   route.push('/(auth)')
 }
   return (
-   <View style={className`flex-1 `}>
-   <MapEmbed mode="view" fallback={bg} />
+   <MapSheetScreen
+     mode="view"
+     fallback={bg}
+     initialRatio={0.85}
+     minRatio={0.3}
+     maxRatio={0.95}
+     showMarker
+     sheetBackgroundColor="#FAFAFA"
+     sheetContentStyle={styles.sheetOuter}
+   >
 
-<View style={className`h-[15%] relative `}>
-
-<TouchableOpacity style={className`absolute left-[50px] bottom-[50px]`} >
-<Image source={marker}  alt='' style={className`w-[100px] h-[100px]`}   />
-</TouchableOpacity>
-</View>
-
-<View
-style={className`h-[85%] bg-[#FAFAFA] flex-col flex rounded-t-[30px]  gap-7 p-1`}  >
-
-
-
-
-    <View style={className`flex flex-col gap-4 w-full bg-white h-full p-3`} >
-
-       <TouchableOpacity style={className`w-full flex flex-row items-center justify-center`}>
-   <Image source={indicator}  alt='' style={className`w-[35px] h-1`}  />
-   </TouchableOpacity>
-
-
-
+    <View style={styles.sheetInner}>
 
      <View style={className`flex flex-row items-center justify-between`}>
 
@@ -136,6 +122,8 @@ style={className`h-[85%] bg-[#FAFAFA] flex-col flex rounded-t-[30px]  gap-7 p-1`
 
     </View>
     
+<ScrollView showsVerticalScrollIndicator={false} style={className`flex-1`}>
+
 {/* Car Details */}
     
 {isLoading ? (
@@ -205,15 +193,26 @@ style={className`h-[85%] bg-[#FAFAFA] flex-col flex rounded-t-[30px]  gap-7 p-1`
     </View>
 )}
 
-</View>
+</ScrollView>
 
 </View>
 
-</View>
+   </MapSheetScreen>
 
   )
 }
 
 export default Vehicle
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  sheetOuter: {
+    padding: 4,
+  },
+  sheetInner: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    padding: 12,
+    gap: 16,
+  },
+})

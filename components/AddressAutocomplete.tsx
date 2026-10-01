@@ -13,9 +13,14 @@ import { useDriverRideStore } from '@/store/driverStore';
 
 type Suggestion = { description: string; placeId: string };
 
-// Kill-switch: when false the field behaves like a plain TextInput and no
-// suggestion requests leave the device. Flip back to true to re-enable.
-const AUTOCOMPLETE_ENABLED = false;
+// Autocomplete was switched off, which left both address fields as freehand
+// text. The backend geocodes with `components: 'country:NG'` and Google's
+// geocoder returns ZERO_RESULTS for a partial/hand-typed address, which comes
+// back as a 400 — the same "Could not locate the ... address" toast you get
+// for a genuinely bad address. Picking a suggestion guarantees a
+// Google-formatted, resolvable string. Free typing still works if the field is
+// left alone; it just has to be a complete address.
+const AUTOCOMPLETE_ENABLED = true;
 
 type Props = {
   value: string;
@@ -38,19 +43,23 @@ export default function AddressAutocomplete({ value, onChange, placeholder, inpu
     };
   }, []);
 
+  const query = value.trim();
+  const canQuery = AUTOCOMPLETE_ENABLED && query.length >= 2;
+
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current);
-    if (!AUTOCOMPLETE_ENABLED || value.trim().length < 2) {
+    if (!canQuery) {
+      // Invalidate any in-flight request instead of calling setState here: the
+      // spinner and the list are already gated on `canQuery` at render time,
+      // so nothing stale can be shown and no cascading render is triggered.
       reqId.current += 1;
-      setSuggestions([]);
-      setLoading(false);
       return;
     }
-    setLoading(true);
     const my = ++reqId.current;
     timer.current = setTimeout(async () => {
+      setLoading(true);
       try {
-        const list = await useDriverRideStore.getState().autocompleteAddress(value.trim());
+        const list = await useDriverRideStore.getState().autocompleteAddress(query);
         if (reqId.current === my) setSuggestions(Array.isArray(list) ? list : []);
       } catch {
         if (reqId.current === my) setSuggestions([]);
@@ -61,7 +70,7 @@ export default function AddressAutocomplete({ value, onChange, placeholder, inpu
     return () => {
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [value]);
+  }, [canQuery, query]);
 
   const select = (s: Suggestion) => {
     reqId.current += 1;
@@ -90,8 +99,8 @@ export default function AddressAutocomplete({ value, onChange, placeholder, inpu
         placeholder={placeholder}
         style={[className`max-w-[85%] w-full bg-transparent text-[16px]`, inputStyle]}
       />
-      {AUTOCOMPLETE_ENABLED && loading && <ActivityIndicator size="small" color="#245AB0" />}
-      {AUTOCOMPLETE_ENABLED && focused && suggestions.length > 0 && (
+      {canQuery && loading && <ActivityIndicator size="small" color="#245AB0" />}
+      {canQuery && focused && suggestions.length > 0 && (
         <FlatList
           data={suggestions}
           keyExtractor={(item) => item.placeId}

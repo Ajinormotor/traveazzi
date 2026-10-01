@@ -12,11 +12,6 @@ const PassengerProfile = () => {
   const email = user?.email ?? 'Not provided'
   const phone = user?.phoneNumber ?? user?.phone ?? 'Not provided'
   const role = user?.roles?.[0]?.name ?? user?.role?.name ?? 'PASSENGER'
-  const initials = [user?.firstName, user?.lastName]
-    .filter(Boolean)
-    .map((n: string) => n[0])
-    .join('')
-    .toUpperCase() || '?'
 
   const handleLogout = async () => {
     await logout()
@@ -27,15 +22,25 @@ const PassengerProfile = () => {
     { icon: 'person-outline', label: 'Full name', value: name },
     { icon: 'mail-outline', label: 'Email', value: email },
     { icon: 'call-outline', label: 'Phone', value: phone },
-    { icon: 'shield-checkmark-outline', label: 'Account type', value: role },
   ] as const
 
   return (
+    <View style={className`flex-1 bg-[#FAFAFA]`}>
+      {/* Back arrow, same icon as Manage Ride / Confirm Ride */}
+      <TouchableOpacity
+        accessibilityLabel="Go back"
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        onPress={() => route.back()}
+        style={className`absolute top-12 left-5 z-10`}
+      >
+        <Ionicons name="arrow-undo-circle-outline" size={20} color="#FFFFFF" />
+      </TouchableOpacity>
+
     <ScrollView style={className`flex-1 bg-[#FAFAFA]`}>
       {/* Header card */}
       <View style={className`bg-[#245AB0] rounded-b-[30px] px-5 pt-10 pb-8 items-center gap-2`}>
         <View style={className`w-[84px] h-[84px] rounded-full bg-white/20 items-center justify-center`}>
-          <Text style={className`text-white text-[28px] font-bold`}>{initials}</Text>
+          <Ionicons name="person" size={40} color="#FFFFFF" />
         </View>
         <Text style={className`text-white text-[22px] font-bold text-center`}>{name}</Text>
         <View style={className`bg-white/20 rounded-full px-4 py-1`}>
@@ -71,6 +76,7 @@ const PassengerProfile = () => {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </View>
   )
 }
 

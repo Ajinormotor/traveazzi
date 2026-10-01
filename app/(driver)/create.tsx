@@ -1,19 +1,18 @@
-import { ActivityIndicator, Dimensions, FlatList, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, 
-  TouchableOpacity, useWindowDimensions, View } from 'react-native'
+import { ActivityIndicator, FlatList, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, 
+  TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import className from 'twrnc'
-import MapEmbed from '@/components/MapEmbed';
+import MapSheetScreen from '@/components/MapSheetScreen';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
+import { useAuthStore } from '@/store/authStore';
 
 
 import cancel from "../../assets/images/cancel.png"
-import indicator from "../../assets/images/indicator.png"
 import Ionicons from '@expo/vector-icons/Ionicons'
 import gps from "../../assets/images/location-04.png"
 import dropIcon from "../../assets/images/drop_icon.png"
 import driver from "../../assets/images/location.png"
 import bg from "../../assets/images/map_bg.png"
-import marker from "../../assets/images/marker.png"
 import priceTag from "../../assets/images/price_tag.png"
 // 
 import { Link, useRouter } from 'expo-router'
@@ -50,7 +49,22 @@ const vehicelFeature = [
   { title: 'Pet friendly' },
 ];
 
-const width = Dimensions.get('window').width;
+
+// Mirrors VehicleVerificationStatus from the backend vehicle schema:
+// NOT_SUBMITTED | PENDING | VERIFIED | REJECTED
+const VEHICLE_STATUS_LABEL: Record<string, string> = {
+  NOT_SUBMITTED: 'NOT SUBMITTED',
+  PENDING: 'PENDING',
+  VERIFIED: 'VERIFIED',
+  REJECTED: 'REJECTED',
+};
+
+const VEHICLE_STATUS_COPY: Record<string, string> = {
+  NOT_SUBMITTED: 'Documents not submitted yet',
+  PENDING: 'Awaiting admin approval',
+  VERIFIED: 'Ready to offer',
+  REJECTED: 'Not approved — check your documents',
+};
 
 const CreateRide = () => {
  
@@ -67,6 +81,12 @@ const CreateRide = () => {
   const [vehicleId, setVehicleId] = useState("");
 
   const { createRide,getAllRides, geocodeAddress, loading } = useDriverRideStore();
+
+  // `loading` from the store only flips once createRide is reached, so it left
+  // the button idle through validation and both geocode round-trips. Track the
+  // whole submit locally so the spinner is up for the entire attempt.
+  const [submitting, setSubmitting] = useState(false);
+  const isSubmitting = submitting || loading;
   
   const { allVehicle , vehicles} = useDriverRideStore()
   useEffect(() => {
@@ -101,14 +121,26 @@ const handleConfirm = (date: any) => {
 };
 
  const handleSelect = (vehicle: VehiclePayload) => {
-    setSelectedVehicle(`${vehicle.make} ${vehicle.model}`);
-    setVehicleId(vehicle._id);
-    setDropdownVisible(false);
-  };
+   // Guard the rule in the handler too, not just in the list's `disabled` prop.
+   if (vehicle?.vehicleVerificationStatus !== 'VERIFIED') {
+     Toast.show({
+       type: 'error',
+       text1: 'Vehicle not available',
+       text2: 'Only a verified vehicle can be offered for a ride.',
+     });
+     return;
+   }
+   setSelectedVehicle(`${vehicle.make} ${vehicle.model}`);
+   setVehicleId(vehicle._id);
+   setDropdownVisible(false);
+ };
 
 
 
 const handleCreateRide = async () => {
+  // Guard against a double-tap firing two offers off one intent.
+  if (isSubmitting) return;
+
   // Validate required fields
   if (
     !originAddress ||
@@ -174,21 +206,70 @@ if (!combinedDate.isValid()) {
   //   text1: 'Clicked two',
   // });
 
-  const originCoords = await geocodeAddress(originAddress);
+  setSubmitting(true);
+
+  // Full trace of what is actually being submitted. JSON.stringify is used on
+  // the address strings deliberately: it exposes leading/trailing spaces, new
+  // lines, zero-width characters and double spaces, all of which look identical
+  // in the TextInput but change what the geocoder receives.
+  //
+  // The token is reported as present/absent and its length only — never its
+  // value — so a Metro log or a screen recording cannot leak a live JWT.
+  const authState = useAuthStore.getState();
+  console.log('[offerRide] SUBMIT', JSON.stringify({
+    originAddress,
+    destinationAddress,
+    originLen: originAddress?.length ?? 0,
+    destLen: destinationAddress?.length ?? 0,
+    originTrimmedEq: originAddress === originAddress?.trim(),
+    destTrimmedEq: destinationAddress === destinationAddress?.trim(),
+    departureDate,
+    departureTime,
+    pricePerSeat,
+    selectedSeat,
+    vehicleId,
+    hasToken: !!authState.token,
+    tokenLength: authState.token?.length ?? 0,
+    isSubmitting,
+  }, null, 2));
+
+  // geocodeAddress throws a GeocodeError carrying the real reason (expired
+  // session, 400 from the server, no connection, unparseable body). Resolve
+  // both ends through one helper so exactly one toast is shown, and it names
+  // the actual cause instead of blaming the address.
+  const resolveAddress = async (value: string, label: string) => {
+    console.log(`[offerRide] geocoding ${label}: ${JSON.stringify(value)}`);
+    try {
+      const coords = await geocodeAddress(value);
+      console.log(`[offerRide] geocoded ${label}: OK`, coords);
+      return coords;
+    } catch (err: any) {
+      console.log(
+        `[offerRide] geocoding ${label}: FAILED`,
+        JSON.stringify({
+          address: value,
+          name: err?.name,
+          userMessage: err?.userMessage,
+          status: err?.status,
+        })
+      );
+      Toast.show({
+        type: 'error',
+        text1: `Could not locate ${label}`,
+        text2: err?.userMessage ?? 'Please try a fuller address.',
+      });
+      return null;
+    }
+  };
+
+  try {
+  const originCoords = await resolveAddress(originAddress, 'the pickup address');
   if (!originCoords) {
-    Toast.show({
-      type: 'error',
-      text1: 'Could not locate the pickup address',
-    });
     return;
   }
 
-  const destinationCoords = await geocodeAddress(destinationAddress);
+  const destinationCoords = await resolveAddress(destinationAddress, 'the drop-off address');
   if (!destinationCoords) {
-    Toast.show({
-      type: 'error',
-      text1: 'Could not locate the drop-off address',
-    });
     return;
   }
 
@@ -210,12 +291,10 @@ if (!combinedDate.isValid()) {
     preferences: selectedFeatures,
   };
 
-  // console.log('Details being sent:', payload);
-
-  try {
-
+  console.log('[offerRide] POST /rides payload:', JSON.stringify(payload));
 
     const success = await createRide(payload);
+    console.log('[offerRide] createRide returned:', JSON.stringify(success));
     await getAllRides()
 
     // console.log("Ride creation finished");
@@ -255,6 +334,8 @@ if (!combinedDate.isValid()) {
       type: 'error',
       text1: 'Failed to create ride. Please try again.',
     });
+  } finally {
+    setSubmitting(false);
   }
 };
 
@@ -268,28 +349,22 @@ if (!combinedDate.isValid()) {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <View style={className`flex-1`}>
-      <MapEmbed mode="view" fallback={bg} />
-        <View style={className`h-[30%] relative`}>
-          <TouchableOpacity style={className`absolute left-[50px] bottom-[50px]`}>
-            <Image source={marker} style={className`w-[100px] h-[100px]`} />
-          </TouchableOpacity>
-        </View>
-
-        <View style={[className`flex-1 flex flex-col gap-3 bg-white p-2 h-1/2`, { width }]}>
-
-          <TouchableOpacity
-      
-           style={className`w-full flex flex-row items-center justify-center`}>
-            <Image source={indicator} style={className`w-[35px] h-1`} />
-
-         
-          </TouchableOpacity>
+      <MapSheetScreen
+        mode="view"
+        fallback={bg}
+        initialRatio={0.5}
+        minRatio={0.25}
+        maxRatio={0.95}
+        showMarker
+        sheetBackgroundColor="#FFFFFF"
+        sheetContentStyle={styles.sheetContent}
+      >
 
           <ScrollView
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
-           style={className`flex flex-col gap-4`}>
+           style={className`flex-1`}
+           contentContainerStyle={className`gap-4 pb-4`}>
 
             <View style={className`flex flex-col gap-4`}>
               
@@ -385,17 +460,13 @@ if (!combinedDate.isValid()) {
                     <Text style={className`text-[#828282] text-[14px]`}>
                       Select Date</Text>
 
-                    <View style={className`bg-[#F0F0F0] h-10 px-3 flex-row items-center rounded-[8px]`}>
-                  <TouchableOpacity onPress={() => setIsVisible(true)}>
-        <Ionicons name="calendar-outline" size={20} color="black" />
-      </TouchableOpacity>
-                      <TextInput
-                        placeholder={currentDate}
-                        value={departureDate}
-                        onChangeText={setDepartureDate}
-                        style={className`flex-1 ml-2`}
-                      />
-                    </View>
+                    <TouchableOpacity onPress={() => setIsVisible(true)}
+                      style={className`bg-[#F0F0F0] h-10 px-3 flex flex-row items-center rounded-[8px]`}>
+                      <Ionicons name="calendar-outline" size={20} color="black" />
+                      <Text style={className`flex-1 ml-2 ${departureDate ? 'text-black' : 'text-[#AAAAAA]'}`}>
+                        {departureDate || 'Select date'}
+                      </Text>
+                    </TouchableOpacity>
                   </View>
 
 
@@ -406,7 +477,7 @@ if (!combinedDate.isValid()) {
                       style={className`bg-[#F0F0F0] h-10 px-3 flex flex-row items-center rounded-[8px]`}>
                       <Ionicons name="time-outline" size={20} color="black" />
                       <Text style={className`flex-1 ml-2 ${departureTime ? 'text-black' : 'text-[#AAAAAA]'}`}>
-                        {departureTime || '09:00 AM'}
+                        {departureTime || 'Select time'}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -420,12 +491,20 @@ if (!combinedDate.isValid()) {
       <DateTimePickerModal
         isVisible={isVisible}
         mode="date"
+        minimumDate={new Date()}
         onConfirm={handleConfirm}
         onCancel={() => setIsVisible(false)}
       />
       <DateTimePickerModal
         isVisible={isTimeVisible}
         mode="time"
+        // Only today is time-boxed: picking a future date means any time is
+        // valid, and the backend rejects a past departureTime anyway.
+        minimumDate={
+          departureDate && dayjs(departureDate, 'MMM DD, YYYY').isSame(dayjs(), 'day')
+            ? new Date()
+            : undefined
+        }
         onConfirm={(date: any) => {
           setDepartureTime(dayjs(date).format('hh:mm A'));
           setIsTimeVisible(false);
@@ -483,17 +562,65 @@ if (!combinedDate.isValid()) {
           style={className`bg-white border border-gray-300 rounded-[8px] mt-2`}
         >
           {(vehicles ?? []).length > 0 ? (
-            (vehicles ?? []).map((item: any) => (
-              <TouchableOpacity
-                key={item._id}
-                onPress={() => handleSelect(item)}
-                style={className`p-3 border-b border-gray-100`}
-              >
-                <Text style={className`text-black`}>
-                  {item.make} {item.model}
-                </Text>
-              </TouchableOpacity>
-            ))
+            (vehicles ?? []).map((item: any) => {
+              // Only a VERIFIED vehicle may be offered. Anything still being
+              // reviewed (PENDING), never submitted, or rejected is shown for
+              // context but is not selectable.
+              const vStatus = item?.vehicleVerificationStatus ?? 'NOT_SUBMITTED';
+              const isVerified = vStatus === 'VERIFIED';
+              const selected = item._id === vehicleId;
+
+              return (
+                <TouchableOpacity
+                  key={item._id}
+                  disabled={!isVerified}
+                  onPress={() => handleSelect(item)}
+                  style={className`w-full flex flex-row items-center justify-between gap-2 p-3 border-b border-gray-100
+                    ${!isVerified ? 'bg-[#FAFAFA] opacity-60' : ''}`}
+                >
+                  <View style={className`flex flex-col flex-1`}>
+                    <Text
+                      style={className`${
+                        isVerified ? 'text-black' : 'text-[#AAAAAA]'
+                      }`}
+                    >
+                      {item.make} {item.model}
+                      {item.color ? ` · ${item.color}` : ''}
+                    </Text>
+                    <Text
+                      style={className`text-[12px] text-[#AAAAAA] mt-[2px]`}
+                    >
+                      {item.plateNumber ? `${item.plateNumber} · ` : ''}
+                      {isVerified ? 'Tap to select' : VEHICLE_STATUS_COPY[vStatus] ?? 'Not available'}
+                    </Text>
+                  </View>
+
+                  {!isVerified ? (
+                    <View
+                      style={className`bg-[#F7F7F7] px-2 h-[24px] flex-row items-center justify-center rounded-[4px]`}
+                    >
+                      <Text
+                        style={className`text-[11px] font-bold text-[#AAAAAA]`}
+                      >
+                        {VEHICLE_STATUS_LABEL[vStatus] ?? 'UNAVAILABLE'}
+                      </Text>
+                    </View>
+                  ) : selected ? (
+                    <View
+                      style={className`w-[20px] h-[20px] rounded-full bg-[#28A745] items-center justify-center`}
+                    >
+                      <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                    </View>
+                  ) : (
+                    <Ionicons
+                      name="chevron-forward"
+                      size={18}
+                      color="#C4C4C4"
+                    />
+                  )}
+                </TouchableOpacity>
+              );
+            })
           ) : (
             <Text style={className`p-3 text-[#AAAAAA] text-[14px]`}>
               No vehicles yet — add one in the Vehicle tab
@@ -545,9 +672,10 @@ if (!combinedDate.isValid()) {
               <View style={className`w-full flex items-center justify-center`}>
                 <TouchableOpacity
                   onPress={handleCreateRide}
-                  style={className`w-full h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px]`}
+                  disabled={isSubmitting}
+                  style={className`w-full h-[46px] bg-[#245AB0] flex items-center justify-center rounded-[6px] ${isSubmitting ? 'opacity-70' : ''}`}
                 >
-                  {loading ? (
+                  {isSubmitting ? (
                     <ActivityIndicator color="#fff" />
                   ) : (
                     <Text style={className`text-white text-[16px]`}>
@@ -560,10 +688,16 @@ if (!combinedDate.isValid()) {
 
           </ScrollView>
 
-        </View>
-      </View>
+      </MapSheetScreen>
     </KeyboardAvoidingView>
   );
 };
 
 export default CreateRide;
+
+const styles = StyleSheet.create({
+  sheetContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+});

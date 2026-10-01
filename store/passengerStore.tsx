@@ -23,6 +23,8 @@ interface PassengerState {
   submitRating: (bookingId: string, score: number, comment?: string) => Promise<any>;
   payBookings: (id: string) => Promise<any>;
   cancelBooking: (bookingId: string) => Promise<boolean>;
+  endBooking: (bookingId: string) => Promise<boolean>;
+  closeRide: (rideId: string) => Promise<boolean>;
   bookings: string[];
   favorites: any[];
   getFavoriteDrivers: () => Promise<any[] | null>;
@@ -30,7 +32,7 @@ interface PassengerState {
   removeFavoriteDriver: (driverId: string) => Promise<boolean>;
 }
 
-export const usePassengerStore = create<PassengerState>((set) => ({
+export const usePassengerStore = create<PassengerState>((set, get) => ({
     loading: false,
     bookings: [],
     favorites: [],
@@ -64,7 +66,73 @@ export const usePassengerStore = create<PassengerState>((set) => ({
       }
     },
 
-    submitRating: async (bookingId, score, comment) => {
+    endBooking: async (bookingId) => {
+    try {
+      const token = useAuthStore.getState().token;
+
+      await axios.patch(
+        `${Base_Url}/passenger/bookings/${bookingId}/end`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      // Keep the cached list honest so Manage Ride stops offering to end again.
+      const list = await get().getMyBookings({ silent: true });
+      return Boolean(list);
+    } catch (error: any) {
+      console.error("Error ending booking:", error?.response?.data || error);
+      Toast.show({
+        type: "error",
+        text1: error?.response?.data?.message ?? "Failed to end trip",
+      });
+      return false;
+    }
+  },
+
+  /**
+   * Close out a finished trip at the ride level.
+   *
+   * This is the call the End Ride button makes. It replaces the plain
+   * endBooking call, which could not succeed: the driver confirms delivery
+   * first, so the booking was already COMPLETED by the time the passenger
+   * pressed it, and the old endpoint rejected that as a conflict. The ride
+   * endpoint is idempotent and is what actually lets the ride reach COMPLETED.
+   */
+  closeRide: async (rideId) => {
+    try {
+      const token = useAuthStore.getState().token;
+
+      await axios.patch(
+        `${Base_Url}/rides/${rideId}/close`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      // Keep the cached booking list honest so Manage Ride stops offering to
+      // end a trip that is now closed.
+      await get().getMyBookings({ silent: true });
+      return true;
+    } catch (error: any) {
+      console.error("Error closing ride:", error?.response?.data || error);
+      Toast.show({
+        type: "error",
+        text1: error?.response?.data?.message ?? "Failed to end trip",
+      });
+      return false;
+    }
+  },
+
+  submitRating: async (bookingId, score, comment) => {
       set({ loading: true });
       try {
         const token = useAuthStore.getState().token;

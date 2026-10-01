@@ -21,6 +21,7 @@ const Logins = () => {
   
   const [email,setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
+  const [showPassword, setShowPassword] = useState(false)
 
   // const portalType =   user.role?.name ? user.role?.name : 'PASSENGER'
 
@@ -108,14 +109,27 @@ style={className`bg-[#F0F0F0] h-[46px] w-full rounded-[8px]
                  items-center p-1 gap-3`}>
             <TextInput
             placeholder='Password'
-            secureTextEntry
+            secureTextEntry={!showPassword}
             autoCapitalize='none'
-            style={className`w-[60%]`}
+            style={className`flex-1`}
                value={password}
             onChangeText={setPassword}
             />
 
-
+            {/* Tapping reveals the typed password without losing it. */}
+            <TouchableOpacity
+              accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+              accessibilityRole="button"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              onPress={() => setShowPassword((prev) => !prev)}
+              className='pr-1'
+            >
+              <Ionicons
+                name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                size={20}
+                color='#434343'
+              />
+            </TouchableOpacity>
 
         </View>
 
@@ -127,7 +141,7 @@ style={className`bg-[#F0F0F0] h-[46px] w-full rounded-[8px]
 {/* No account */}
 <View style={className`flex flex-row justify-between items-center`}>
   <Text style={className`text-[14px] font-medium`}>
-    Don't have an account?{' '}
+    Don&apos;t have an account?{' '}
     <Text
       style={className`text-[#007BFF]`}
       onPress={() => router.push('/(auth)/signup')}

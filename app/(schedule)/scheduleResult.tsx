@@ -1,15 +1,13 @@
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useState } from 'react'
-import className, { style } from 'twrnc'
-import MapEmbed from '@/components/MapEmbed';
+import className from 'twrnc'
+import MapSheetScreen from '@/components/MapSheetScreen';
 import bg from "../../assets/images/map_bg.png"
-import marker from "../../assets/images/marker.png"
-import directions from "../../assets/images/navigation-03.png"
-import indicator from "../../assets/images/indicator.png"
-import cancel from "../../assets/images/cancel.png"
 import load from "../../assets/images/available drivers.png"
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { useRouter } from 'expo-router'
 import { useDriverRideStore } from '@/store/driverStore'
+import { formatPrice } from '@/lib/formatPrice';
 
 const ScheduleResult = () => {
 const { rides: storeRides, loading } = useDriverRideStore();
@@ -24,46 +22,33 @@ const [ scheduled, setScheduled] = useState(false)
  
 
   return (
-
-      <View style={className`flex-1 `}>
-      <MapEmbed mode="view" fallback={bg} />
-
-<View style={className`h-[30%] relative `}>
-
-<TouchableOpacity style={className`absolute left-[50px] bottom-[50px]`} >
-<Image source={marker}  alt='' style={className`w-[100px] h-[100px]`}   />
-</TouchableOpacity>
-
-<TouchableOpacity style={className`absolute right-[30px] bottom-[20px]`}>
-
-    <View style={className` w-[40px] h-[40px]  rounded-full bg-white flex flex-row items-center
-         justify-center border-[1px] border-[#F0F0F0]`}>
-    <Image source={directions}  alt='' style={className`w-[20px] h-[20px]`}   />
-    </View>
-
-</TouchableOpacity>
-
-</View>
+    <MapSheetScreen
+      mode="view"
+      fallback={bg}
+      initialRatio={0.7}
+      minRatio={0.3}
+      maxRatio={0.95}
+      showMarker
+      sheetBackgroundColor="#FFFFFF"
+      sheetContentStyle={styles.sheetContent}
+    >
 
 
 {
 
-    loading  ?
+    loading  ? 
 
     (
-<View
-    style={className`h-[70%] bg-white flex-col  rounded-t-[30px] py-4 px-3 gap-7`}  >
-
-<TouchableOpacity style={className`w-full flex flex-row items-center justify-center`}>
-   <Image source={indicator}  alt='' style={className`w-[35px] h-1`}  />
-   </TouchableOpacity>
+<View style={className`flex-1 gap-7`}>
 
       <View style={className`flex flex-row items-center justify-between`}>
         <Text style={className`font-medium text-[16px]`}>Searching for available ride...</Text>
 
         
-            <TouchableOpacity>
-              <Image source={cancel} alt='' style={className`w-[20px] h-[20px]`   }  />
+            <TouchableOpacity
+              accessibilityLabel="Go back"
+              onPress={() => route.back()}>
+              <Ionicons name="arrow-undo-circle-outline" size={20} />
             </TouchableOpacity>
 
       </View>
@@ -78,22 +63,14 @@ const [ scheduled, setScheduled] = useState(false)
     </View>
 
   )
+  : 
 
-:
-
-(
-<View 
-style={className`h-[70%] bg-white flex-col  rounded-t-[30px] py-4 px-3 gap-7`}  >
-
-    
-<TouchableOpacity style={className`w-full flex flex-row items-center justify-center`}>
-   <Image source={indicator}  alt='' style={className`w-[35px] h-1`}  />
-   </TouchableOpacity>
-
+  (
 
 <ScrollView
 showsVerticalScrollIndicator={false}
-
+style={className`flex-1`}
+contentContainerStyle={className`gap-7`}
 >
 
 
@@ -102,8 +79,10 @@ showsVerticalScrollIndicator={false}
         <Text style={className`font-medium text-[16px]`}>Available ride...</Text>
 
         
-            <TouchableOpacity>
-              <Image source={cancel} alt='' style={className`w-[20px] h-[20px]`   }  />
+            <TouchableOpacity
+              accessibilityLabel="Go back"
+              onPress={() => route.back()}>
+              <Ionicons name="arrow-undo-circle-outline" size={20} />
             </TouchableOpacity>
 
       </View>
@@ -126,10 +105,10 @@ showsVerticalScrollIndicator={false}
 
                         <View style={className`w-[101px] h-[31px] bg-[#F7F7F7] rounded-[5px] p-1 flex 
                             flex-row items-center justify-center`}>
-                            <Text>{r.vehicleId ?? rideId}</Text>
+<Text style={className`text-[14px] font-bold text-[#434343]`}>{r.vehicleId ?? rideId}</Text>
                         </View>
                         <View>
-                 <Text style={className`text-2xl text-[#008000]`}>₦{r.pricePerSeat ?? r.price}</Text>
+                 <Text style={className`text-2xl text-[#008000]`}>₦{formatPrice(r.pricePerSeat ?? r.price)}</Text>
                         </View>
 
                     </View>
@@ -185,19 +164,19 @@ style={className`w-[361px] h-[46px] bg-[#245AB0] flex items-center justify-cente
 
       </ScrollView>
 
-
-
-</View>
-
 )
 
 }
 
-        </View>
-
+    </MapSheetScreen>
   )
 }
 
 export default ScheduleResult
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  sheetContent: {
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+  },
+})

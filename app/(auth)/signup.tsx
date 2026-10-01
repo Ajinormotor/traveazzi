@@ -27,6 +27,8 @@ const Signup = () => {
   const [gender, setGender] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [portalType, setPortalType] = useState<"DRIVER" | "PASSENGER">("PASSENGER");
 
   // Profile completion needs the OTP partial token. If there is none (fresh
@@ -140,12 +142,25 @@ const Signup = () => {
               >
                 <TextInput
                   placeholder="Password"
-                  secureTextEntry
+                  secureTextEntry={!showPassword}
                   autoCapitalize="none"
-                  style={className`w-[60%]`}
+                  style={className`flex-1`}
                   value={password}
                   onChangeText={setPassword}
                 />
+                <TouchableOpacity
+                  accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                  accessibilityRole="button"
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                  onPress={() => setShowPassword((prev) => !prev)}
+                  className='pr-1'
+                >
+                  <Ionicons
+                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color='#434343'
+                  />
+                </TouchableOpacity>
               </View>
 
               {/* confirm Passord */}
@@ -155,12 +170,25 @@ const Signup = () => {
               >
                 <TextInput
                   placeholder="Confirm Password"
-                  secureTextEntry
+                  secureTextEntry={!showConfirmPassword}
                   autoCapitalize="none"
-                  style={className`w-[60%]`}
+                  style={className`flex-1`}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                 />
+                <TouchableOpacity
+                  accessibilityLabel={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  accessibilityRole="button"
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                  onPress={() => setShowConfirmPassword((prev) => !prev)}
+                  className='pr-1'
+                >
+                  <Ionicons
+                    name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color='#434343'
+                  />
+                </TouchableOpacity>
               </View>
 
               {/* Role selector */}

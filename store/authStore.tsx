@@ -1,6 +1,7 @@
 import Toast from "react-native-toast-message";
 import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { syncPushRegistration, removePushRegistration } from "@/lib/notifications";
 
 const Base_Url =
   process.env.EXPO_PUBLIC_API_URL ?? "https://traveazi.onrender.com/api";
@@ -216,6 +217,10 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       await AsyncStorage.setItem("token", token);
       await AsyncStorage.setItem("user", JSON.stringify(user));
 
+      // Upload this device's FCM token so the driver receives booking
+      // requests. Fire-and-forget: never block or fail login on it.
+      syncPushRegistration(token);
+
       Toast.show({ type: "success", text1: "Logged in" });
 
       return true;
@@ -259,6 +264,10 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         await AsyncStorage.setItem("token", data?.data?.token?.accessToken);
         await AsyncStorage.setItem("user", JSON.stringify(data?.data?.user));
 
+        // FCM tokens rotate, so re-upload on every session restore rather
+        // than trusting whatever was registered on a previous launch.
+        syncPushRegistration(data?.data?.token?.accessToken);
+
         return true;
       } else {
         set({ loading: false });
@@ -277,6 +286,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
 
   logout: async () => {
+    const sessionToken = useAuthStore.getState().token;
+    // Unregister first: once the local token is cleared we can no longer
+    // authenticate the call, and a stale token would keep pushing rides
+    // to the next user of this phone.
+    await removePushRegistration(sessionToken);
     try {
       await fetch(`${Base_Url}/auth/logout`, {
         method: "POST",

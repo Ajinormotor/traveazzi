@@ -1,20 +1,18 @@
-import { Dimensions, FlatList, Image,
+import { FlatList, Image,
    KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, 
    ActivityIndicator,
-  TouchableOpacity, useWindowDimensions, View } from 'react-native'
+  TouchableOpacity, View } from 'react-native'
 import React, { useState } from 'react'
 import className from 'twrnc'
-import MapEmbed from '@/components/MapEmbed';
+import MapSheetScreen from '@/components/MapSheetScreen';
 
 
 // import cancel from "../../assets/images/cancel.png"
 
-import indicator from "../../assets/images/indicator.png"
 import Ionicons from '@expo/vector-icons/Ionicons'
 import gps from "../../assets/images/location-04.png"
 import driver from "../../assets/images/location.png"
 import bg from "../../assets/images/map_bg.png"
-import marker from "../../assets/images/marker.png"
 // 
 import { useRouter } from 'expo-router';
 import { useDriverRideStore, VehiclePayload } from '@/store/driverStore'
@@ -39,7 +37,6 @@ const vehicelFeature = [
 
 const AddVehicle = () => {
   
-    const width = Dimensions.get('window').width;
     const router = useRouter()
 
 
@@ -139,31 +136,21 @@ const handleAddVehicle = async () => {
     >
 
 
-     <View style={className`flex-1 `}>
-     <MapEmbed mode="view" fallback={bg} />
-
-        <View style={className`h-[30%] relative `}>
-
-<TouchableOpacity style={className`absolute left-[50px] bottom-[50px]`} >
-<Image source={marker}  alt='' style={className`w-[100px] h-[100px]`}   />
-</TouchableOpacity>
-
-</View>
-
-    <View style={[className`flex-1 flex flex-col gap-3 bg-white p-2 h-1/2`,
-        {width}
-    ]}>
-
-      
-   <TouchableOpacity style={className`w-full flex flex-row items-center justify-center`}>
-   <Image source={indicator}  alt='' style={className`w-[35px] h-1`}  />
-   </TouchableOpacity>
-
-
+     <MapSheetScreen
+       mode="view"
+       fallback={bg}
+       initialRatio={0.5}
+       minRatio={0.25}
+       maxRatio={0.95}
+       showMarker
+       sheetBackgroundColor="#FFFFFF"
+       sheetContentStyle={styles.sheetContent}
+     >
 
 <ScrollView 
 showsHorizontalScrollIndicator={false}
- style={className`flex flex-col gap-4  px-2`}>
+ style={className`flex-1`}
+ contentContainerStyle={className`gap-4 px-2 pb-4`}>
 
 <View  style={className` flex flex-col gap-4`}>
 
@@ -385,8 +372,7 @@ showsHorizontalScrollIndicator={false}
 
 </ScrollView>
 
-</View>
-        </View>
+     </MapSheetScreen>
 
     </KeyboardAvoidingView>
   )
@@ -394,4 +380,9 @@ showsHorizontalScrollIndicator={false}
 
 export default AddVehicle
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  sheetContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+})

@@ -22,6 +22,7 @@ const Forgotpassword = () => {
   const [email, setEmail] = useState<string>("");
   const [code, setCode] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSendCode = async () => {
     if (!email) return;
@@ -113,12 +114,25 @@ const Forgotpassword = () => {
                 >
                   <TextInput
                     placeholder="New password"
-                    style={className`w-[90%] px-2`}
+                    style={className`flex-1 px-2`}
                     value={password}
                     onChangeText={setPassword}
-                    secureTextEntry
+                    secureTextEntry={!showPassword}
                     autoCapitalize="none"
                   />
+                  <TouchableOpacity
+                    accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                    accessibilityRole="button"
+                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                    onPress={() => setShowPassword((prev) => !prev)}
+                    className='pr-1'
+                  >
+                    <Ionicons
+                      name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                      size={20}
+                      color='#434343'
+                    />
+                  </TouchableOpacity>
                 </View>
 
                 <TouchableOpacity
@@ -135,7 +149,7 @@ const Forgotpassword = () => {
 
                 <TouchableOpacity onPress={() => setStep(1)}>
                   <Text style={className`text-[12px] text-[#007BFF] underline text-center`}>
-                    Didn't get the code? Change email / resend
+                    Didn&apos;t get the code? Change email / resend
                   </Text>
                 </TouchableOpacity>
               </>

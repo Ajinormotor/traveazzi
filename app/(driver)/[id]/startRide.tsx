@@ -1,12 +1,10 @@
-import { ActivityIndicator, Dimensions, Image, ScrollView, StyleSheet,
+import { ActivityIndicator, Image, ScrollView, StyleSheet,
      Text, TextInput, TouchableOpacity, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import bg from "../../../assets/images/map_bg.png"
 import className, { style } from 'twrnc'
-import MapEmbed from '@/components/MapEmbed';
-import marker from "../../../assets/images/marker.png"
+import MapSheetScreen from '@/components/MapSheetScreen';
 import down from "../../../assets/images/down.png"
-import indicator from "../../../assets/images/indicator.png"
 import cancel from "../../../assets/images/cancel.png"
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { useLocalSearchParams, useRouter, Link } from 'expo-router'
@@ -15,19 +13,25 @@ import Toast from 'react-native-toast-message'
 import downArrow from "../../../assets/images/down_arrow.png"
 import up from "../../../assets/images/up.png"
 import dayjs from 'dayjs';
+import { formatPrice } from '@/lib/formatPrice'
 
 
 
 const StartRide = () => {
 const router = useRouter()
-const { width } = Dimensions.get('window');
-const [rideDetails, setRideDetails] = useState<RidePayload | null>(null)
 
 
   const {id} = useLocalSearchParams()
 
   // console.log('Mange Id details:', id)
   const {rides, getAllRides} = useDriverRideStore()  
+
+const rideDetails: RidePayload | null = useMemo(() => {
+  const key = Array.isArray(id) ? id[0] : id;
+  if (!key) return null;
+  return (rides.find((ride: any) => ride._id === key) as RidePayload) ?? null;
+}, [id, rides]);
+
 
   const data =  rides.find((ride: any) => ride._id === id)   
 
@@ -79,13 +83,6 @@ const[isLoading, setIsLoading] = useState(true);
 
 
 useEffect(() => {
-    if (id && rides.length > 0) {
-      const data = rides.find((ride: any) => ride._id === id);
-      // console.log('Ride details:', data);
-      setRideDetails(data || null); 
-    }
-
-
     async function fetchPassengerRides(id : string | string[]) {
       setIsLoading(true);
       try {
@@ -107,7 +104,17 @@ useEffect(() => {
 
 // console.log('Start Ride Passenger User:', passengerUser);
 
-const [actionId, setActionId]  = useState<string | null>(null);
+// A single id made Accept and Reject show their spinner together, because both
+// buttons test `actionId === booking._id`. Track the action too so only the
+// button that was actually tapped spins.
+const [pendingAction, setPendingAction] = useState<{
+  id: string;
+  type: 'accept' | 'reject';
+} | null>(null);
+
+const isPending = (bookingId: string, type: 'accept' | 'reject') =>
+  pendingAction?.id === bookingId && pendingAction.type === type;
+const isBusy = (bookingId: string) => pendingAction?.id === bookingId;
 
 const refetchPassengers = async () => {
   const rideId = Array.isArray(id) ? id[0] : id;
@@ -121,8 +128,8 @@ const refetchPassengers = async () => {
 };
 
 const handleReject = async(bookingId: string) => {
-  if (actionId) return;
-  setActionId(bookingId);
+  if (pendingAction) return;
+  setPendingAction({ id: bookingId, type: 'reject' });
   try {
     await rejectPassengerRides(bookingId)
     await refetchPassengers()
@@ -132,14 +139,14 @@ const handleReject = async(bookingId: string) => {
       text1: error?.response?.data?.message ?? error?.message ?? 'Failed to reject ride',
     });
   } finally {
-    setActionId(null)
+    setPendingAction(null)
   }
 }
 
 
 const handleAccept = async(bookingId: string) => {
-  if (actionId) return;
-  setActionId(bookingId);
+  if (pendingAction) return;
+  setPendingAction({ id: bookingId, type: 'accept' });
   try {
     await acceptPassengerRides(bookingId)
     await refetchPassengers()
@@ -149,38 +156,30 @@ const handleAccept = async(bookingId: string) => {
       text1: error?.response?.data?.message ?? error?.message ?? 'Failed to accept ride',
     });
   } finally {
-    setActionId(null)
+    setPendingAction(null)
   }
 }
 
 
   return (
-<View style={[className`flex-1`, { width }]}>
-<MapEmbed mode="directions" origin={data?.originAddress} destination={data?.destinationAddress} fallback={bg} />
+<MapSheetScreen
+  mode="directions"
+  origin={data?.originAddress}
+  destination={data?.destinationAddress}
+  fallback={bg}
+  initialRatio={0.8}
+  minRatio={0.3}
+  maxRatio={0.95}
+  showMarker
+  sheetBackgroundColor="#FFFFFF"
+  sheetContentStyle={styles.sheetContent}
+>
 
-
-        <View style={className`h-[20%] relative `}>
-
-<TouchableOpacity style={className`absolute left-[50px] bottom-[50px]`} >
-<Image source={marker}  alt='' style={className`w-[100px] h-[100px]`}   />
-</TouchableOpacity>
-</View>
-
-    <View style={[className`flex-1 flex flex-col gap-3 bg-white p-3 h-[80%]`,
-        {width}
-    ]}>
-
-      
 <ScrollView  
 showsVerticalScrollIndicator={false}
 showsHorizontalScrollIndicator={false}
-style={className`flex flex-col gap-3  `}>
-
-   <TouchableOpacity style={className`w-full flex flex-row items-center justify-center`}>
-   <Image source={indicator}  alt='' style={className`w-[35px] h-1`}  />
-   </TouchableOpacity>
-
-
+style={className`flex-1`}
+contentContainerStyle={className`gap-3 pb-3`}>
 
 
 
@@ -195,16 +194,16 @@ style={className`flex flex-col gap-3  `}>
     <View style={className`flex flex-row gap-2 `}>
 
         <TouchableOpacity onPress={handleToggle} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          style={className`flex flex-row items-center gap-2 py-2`}>
-          <Text style={className`text-2xl  font-bold ml-[-38px]`}>
+          style={className`flex flex-row items-center gap-1 py-2`}>
+          <Text style={className`text-2xl  font-bold ml-[-32px]`}>
             Manage ride</Text>
           <Image source={down} alt=''
-        style={className`w-[12px] h-[7px] mt-3`}  />
+        style={className`w-[12px] h-[7px] `}  />
         </TouchableOpacity>
      
       </View>
 
-         <Text style={className`text-[14px] text-[#AAAAAA] font-bold`}>
+         <Text style={className`text-[14px] text-[#AAAAAA] font-bold mt-[-8px]`}>
           Manage your trip and requests.</Text>
 
 
@@ -218,14 +217,14 @@ style={className`flex flex-col gap-3  `}>
     <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
       <Link href="/(driver)/vehicle"
       style={className`border-b border-gray-200`}>
-      <Text>Vehicle</Text>
+      <Text className='text-[14px] font-bold text-black'>Vehicle</Text>
        </Link>
     </TouchableOpacity>
 
         <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
       <Link href="/(driver)/profile"
       style={className`border-b border-gray-200`}>
-      <Text> Profile </Text>
+      <Text className='text-[14px] font-bold text-black'>Profile</Text>
        </Link>
     </TouchableOpacity>
 
@@ -281,10 +280,12 @@ style={className`flex flex-col gap-3  `}>
             style={className``}  />
             <Text style={className`text-[14px] font-bold`}>{data?.originAddress ?? ''}</Text>
         </View>
-        
-        <Text style={className`text-[12px] font-bold text-[#434343]`}>
+
+        {/* Duplicate of the destination that sits below the arrow. The arrow row
+            further down already prints it, so this copy is commented out. */}
+        {/* <Text style={className`text-[12px] font-bold text-[#434343]`}>
           {data?.destinationAddress  ?? ''}
-        </Text>
+        </Text> */}
         </View>
         
       
@@ -296,12 +297,19 @@ style={className`flex flex-col gap-3  `}>
 
 
 {/* Seperator with time */}
-                <View style={className`flex flex-row items-center  gap-2 px-2`}>
-                  <Text style={className`text-[#8C8C8C] text-sm`}>
+                <View style={className`flex flex-row items-center gap-2 px-2`}>
+                  <Text
+                    numberOfLines={1}
+                    style={className`text-[#8C8C8C] text-sm`}
+                  >
                     {dayjs(data?.departureTime).format('MMM D, h:mm A')}
                     </Text>
-                  <View style={className`w-full border-[#ECECEC] border-[2px] w-[45%] h-[2px]`}></View>
-                  <Text style={className`text-[#008000] text-sm font-bold`}>#25,000.00</Text>
+                  <View style={className`flex-1 border-[#ECECEC] border-[2px] h-[2px]`}></View>
+                  <Text numberOfLines={1} style={className`text-[#008000] text-sm font-bold`}>
+                    {data?.pricePerSeat != null
+                      ? `₦${formatPrice(data.pricePerSeat)}`
+                      : '—'}
+                  </Text>
                 </View>
 
                  <View  style={className`flex flex-col bg-white  `}>
@@ -319,9 +327,10 @@ style={className`flex flex-col gap-3  `}>
                    {data?.destinationAddress }
             </Text>
         </View>
-        
-        <Text style={className`text-[12px] font-bold text-[#434343]`}>
-               {data?.destinationAddress }</Text>
+
+        {/* Duplicate of the destination printed right above this row. */}
+        {/* <Text style={className`text-[12px] font-bold text-[#434343]`}>
+               {data?.destinationAddress }</Text> */}
         </View>
         
        
@@ -370,10 +379,10 @@ style={className`flex flex-col gap-3  `}>
   style={[ className`flex flex-row gap-2 items-center `]}
 >
 
-         <TouchableOpacity onPress={() => handleReject(booking._id)} disabled={actionId === booking._id}>
+         <TouchableOpacity onPress={() => handleReject(booking._id)} disabled={isBusy(booking._id)}>
          
-          <View style={className`flex flex-row items-center justify-center bg-[#DC3545] w-[71px] h-[35px] rounded-[8px] ${actionId === booking._id ? 'opacity-60' : ''}`}>
-            {actionId === booking._id ? (
+          <View style={className`flex flex-row items-center justify-center bg-[#DC3545] w-[71px] h-[35px] rounded-[8px] ${isPending(booking._id, 'reject') ? 'opacity-60' : ''}`}>
+            {isPending(booking._id, 'reject') ? (
               <ActivityIndicator color="#fff" size="small" />
             ) : (
               <Text style={className`text-white text-sm font-bold`}>Reject</Text>
@@ -382,11 +391,11 @@ style={className`flex flex-col gap-3  `}>
            </TouchableOpacity> 
            
 
-  <TouchableOpacity onPress={() => handleAccept(booking._id)} disabled={actionId === booking._id}>
+  <TouchableOpacity onPress={() => handleAccept(booking._id)} disabled={isBusy(booking._id)}>
 
 
-          <View style={className`flex flex-row items-center justify-center bg-[#28A745] w-[71px] h-[35px] rounded-[8px] ${actionId === booking._id ? 'opacity-60' : ''}`}>
-            {actionId === booking._id ? (
+          <View style={className`flex flex-row items-center justify-center bg-[#28A745] w-[71px] h-[35px] rounded-[8px] ${isPending(booking._id, 'accept') ? 'opacity-60' : ''}`}>
+            {isPending(booking._id, 'accept') ? (
               <ActivityIndicator color="#fff" size="small" />
             ) : (
               <Text style={className`text-white text-sm font-bold`}>Accept</Text>
@@ -428,7 +437,7 @@ style={className`flex flex-col gap-3  `}>
 
 
     {/* button */}
-{rideDetails?.status !== "COMPLETED" && rideDetails?.status !== "CANCELED" && (
+{rideDetails?.status !== "COMPLETED" && rideDetails?.status !== "CANCELLED" && (
   <View style={className`flex flex-col gap-2`}>
 
     {/* Start or Continue Button */}
@@ -463,14 +472,17 @@ style={className`flex flex-col gap-3  `}>
   </View>
 )}
 
-
-    </View>
-
-    </View>
+</MapSheetScreen>
   )
 }
 
 export default StartRide
+
+const styles = StyleSheet.create({
+  sheetContent: {
+    padding: 12,
+  },
+})
 
 
 import user from "../../../assets/images/user.png"

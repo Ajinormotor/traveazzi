@@ -3,6 +3,7 @@
     switch (status) {
       case "SCHEDULED":
         return "#245AB0"; 
+      case "PENDING":
       case "IN_PROGRESS":
         return "#EAB308"; 
       case "COMPLETED":

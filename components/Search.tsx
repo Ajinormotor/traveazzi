@@ -3,7 +3,6 @@ import { FlatList, Image, ScrollView, StyleSheet, Text, TextInput,
 import React, { useState } from 'react'
 import className from 'twrnc'
 import cancel from "../assets/images/cancel.png"
-import indicator from "../assets/images/indicator.png"
 import Ionicons from '@expo/vector-icons/Ionicons'
 import gps from "../assets/images/location-04.png"
 import down from "../assets/images/down.png"
@@ -64,16 +63,10 @@ const handleLogout = async() => {
 
 
   return (
-    <View style={className` flex flex-col gap-3`}>
+    <View style={className`flex-1 flex flex-col`}>
 
-      
-   <TouchableOpacity style={className`w-full flex flex-row items-center justify-center`}>
-   <Image source={indicator}  alt='' style={className`w-[35px] h-1`}  />
-   </TouchableOpacity>
+<ScrollView  style={className`flex-1`} contentContainerStyle={className`pb-2`}>
 
-
-
-<ScrollView  style={className`flex flex-col gap-4 `}>
 
 <View  style={className` flex flex-col gap-4`}>
 
@@ -209,8 +202,16 @@ const handleLogout = async() => {
           router.push(s.path as any);
         }}
       >
-          <Image source={s.img}  
-          style={className`w-[20px] h-[20px] mt-1`}  />
+          {s.icon ? (
+            <Ionicons
+              name={s.icon as React.ComponentProps<typeof Ionicons>['name']}
+              size={20}
+              color="#245AB0"
+              style={className`mt-1`}
+            />
+          ) : (
+            <Image source={s.image} alt='' style={className`w-[24px] h-[24px]`} />
+          )}
         </TouchableOpacity>
 
 <TouchableOpacity

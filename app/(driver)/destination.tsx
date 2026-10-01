@@ -4,16 +4,16 @@ import React, { useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { riderListData } from '@/constants/data/riderList'
 import className, { style } from 'twrnc'
-import MapEmbed from '@/components/MapEmbed';
+import MapSheetScreen from '@/components/MapSheetScreen';
 
 import transit_bg from "../../assets/images/bg_map_ongoing.png"
-import indicator from "../../assets/images/indicator.png"
 import distanceIcon from "../../assets/images/Flash-Fast-Speed--Streamline-Core.png.png"
 import i from "../../assets/images/i.png"
 import green_gps from "../../assets/images/green_gps.png"
 import transit_car from "../../assets/images/car_9855634 1.png"
 import down from "../../assets/images/down.png"
 import { LinearGradient } from 'expo-linear-gradient'
+import { formatPrice } from '@/lib/formatPrice'
 
 
 const emoji = [
@@ -36,20 +36,21 @@ const item = riderListData.find(item => item.id === id)
 console.log('item',item)
 
   return (
-    <View style={className`flex-1 `}>
-    <MapEmbed mode="view" fallback={transit_bg} />
+    <MapSheetScreen
+      mode="view"
+      fallback={transit_bg}
+      initialRatio={0.7}
+      minRatio={0.3}
+      maxRatio={0.95}
+      showMarker={false}
+      sheetBackgroundColor="#FAFAFA"
+      sheetContentStyle={styles.sheetContent}
+    >
 
-
-<View style={className`h-[30%] relative `}>
-
-
-</View>
-
-<View 
-style={className`h-[70%] bg-[#FAFAFA]  flex-col  rounded-t-[30px]  gap-2`}  >
     <ScrollView
 showsVerticalScrollIndicator={false}
-style={className`flex flex-col gap-3`}
+style={className`flex-1`}
+contentContainerStyle={className`gap-3`}
 >
 
 
@@ -57,10 +58,6 @@ style={className`flex flex-col gap-3`}
     <View style={className`bg-white px-2 flex flex-col gap-[10px]`}>
 
   
-<TouchableOpacity style={className`w-full flex flex-row items-center pt-2 justify-center`}>
-   <Image source={indicator}  alt='' style={className`w-[35px] h-1`}  />
-   </TouchableOpacity>
-
 
 <View style={className`flex flex-col gap-[10px] py-3 `}>
 
@@ -70,7 +67,7 @@ style={className`flex flex-col gap-3`}
         <Image source={distanceIcon} alt=''
         style={className`w-[24px] h-[24px]`  }  />
         <Text style={className`flex flex-row gap-1 text-[18px]`}>
-            <Text style={className`font-bold text-[#000000]`} >You've Arrived!</Text>
+            <Text style={className`font-bold text-[#000000]`} >You&apos;ve Arrived!</Text>
             
         </Text>
     </View>
@@ -96,7 +93,7 @@ style={className`flex flex-col gap-3`}
 {/* Linear gradient */}
     <View style={className`flex flex-row items-center gap-[10px] h-[32px] w-full px-2 bg-[#FAFAFA] rounded-[4px]`}>
 
-        <View style={className`flex flex-row gap-[10px] w-[95%] items-center `}>
+        <View style={className`flex flex-row gap-[10px] flex-1 items-center `}>
             <LinearGradient
             colors={['#D3D3D3', '#000000']}
             style={className` h-[6px] w-[30%]`}
@@ -105,11 +102,11 @@ style={className`flex flex-col gap-3`}
 
         <Image source={transit_car} alt=''
             style={className`w-[24px] h-[16px]`} />
-               <View style={className`bg-[#00B964] h-[6px]  w-[55%] rounded-[1px]`}></View>
+               <View style={className`bg-[#00B964] h-[6px]  flex-1 rounded-[1px]`}></View>
 
  </View>
 
-        <View style={className`w-[5%]`}>
+        <View style={className`items-end`}>
             <Image source={green_gps} alt=''
             style={className`w-[16px] h-[16px]`} />
         </View>
@@ -188,7 +185,7 @@ style={className`flex flex-col gap-3`}
 
                       <View style={className`w-[101px] h-[31px] bg-[#F7F7F7] rounded-[5px] p-1 flex  font-bold
                             flex-row items-center justify-center`}>
-                            <Text>{item?.plate_no}</Text>
+<Text style={className`text-[14px] font-bold text-[#434343]`}>{item?.plate_no}</Text>
                         </View>
 
                       
@@ -216,7 +213,7 @@ style={className`flex flex-col gap-3`}
 </View>
 
   <View>
-                 <Text style={className`text-2xl text-[#008000] font-bold`}>₦{item?.price}</Text>
+                 <Text style={className`text-2xl text-[#008000] font-bold`}>₦{formatPrice(item?.price)}</Text>
                         </View>
 
 
@@ -269,12 +266,15 @@ style={className`flex flex-col gap-3`}
                 </View>
 
 </ScrollView>
-   </View>
-
-        </View>
+    </MapSheetScreen>
   )
 }
 
 export default Destination
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  sheetContent: {
+    gap: 8,
+    paddingHorizontal: 16,
+  },
+})

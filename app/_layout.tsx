@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { LogBox } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+import { configureForegroundHandler } from "@/lib/notifications";
 
 // react-native-modal-datetime-picker@18 (latest) still passes the deprecated
 // `onChange` prop to @react-native-community/datetimepicker internally.
@@ -30,6 +31,9 @@ export default function RootLayout (){
     const [showBrandSplash, setShowBrandSplash] = useState(true);
 
     useEffect(() => {
+        // Must run before any push can arrive, otherwise a notification
+        // delivered while the app is open is dropped by the OS.
+        configureForegroundHandler();
         checkAuth()
     },[checkAuth])
 
@@ -75,7 +79,7 @@ useEffect(() => {
 }, [fontsLoaded, fontError, isHydrated, showBrandSplash]);
 
     if (!(fontsLoaded || fontError)) {
-        return null; // native splash still visible
+        return null; 
     }
 
     return (

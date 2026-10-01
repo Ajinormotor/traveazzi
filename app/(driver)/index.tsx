@@ -10,10 +10,8 @@ import {
 import React, { useEffect, useState } from "react";
 import bg from "../../assets/images/map_bg.png";
 import className from "twrnc";
-import MapEmbed from '@/components/MapEmbed';
-import marker from "../../assets/images/marker.png";
+import MapSheetScreen from '@/components/MapSheetScreen';
 import down from "../../assets/images/down.png";
-import indicator from "../../assets/images/indicator.png";
 import cancel from "../../assets/images/cancel.png";
 import up from "../../assets/images/up.png";
 import downs from "../../assets/images/down_arrow.png";
@@ -22,6 +20,7 @@ import { Link, router, useRouter } from "expo-router";
 import { useAuthStore } from "@/store/authStore";
 import { useDriverRideStore } from "@/store/driverStore";
 import { getStatusColor } from "@/constants/statusColor";
+import { formatPrice } from '@/lib/formatPrice';
 
 const historyTitle = [
   { title: "Upcoming" },
@@ -88,9 +87,16 @@ const DriverIndex = () => {
       case "Completed":
         return item?.status === "COMPLETED";
       case "Pending":
+        // "PENDING" is a *BookingStatus* (a passenger awaiting the driver's
+        // response), not a RideStatus, so it can never match a ride here. The
+        // four tabs must also partition the RideStatus enum -- these tabs used
+        // to match SCHEDULED as well, which made every scheduled ride appear in
+        // both "Upcoming" and "Pending". Pending is the one remaining live
+        // state: started and under way, not finished yet.
         return item?.status === "IN_PROGRESS";
       case "Cancelled":
-        return item?.status === "CANCELED";
+        // The enum spells it with two L's; "CANCELED" never matched anything.
+        return item?.status === "CANCELLED";
       default:
         return true;
     }
@@ -99,24 +105,18 @@ const DriverIndex = () => {
 
 
   return (
-    <View style={className`flex-1`}>
-    <MapEmbed mode="view" fallback={bg} />
-      {/* Map section */}
-      <View style={className`h-[15%] relative`}>
-        <TouchableOpacity style={className`absolute left-[50px] bottom-[50px]`}>
-          <Image source={marker} style={className`w-[100px] h-[100px]`} />
-        </TouchableOpacity>
-      </View>
-
+    <MapSheetScreen
+      mode="view"
+      fallback={bg}
+      initialRatio={0.85}
+      minRatio={0.3}
+      maxRatio={0.95}
+      showMarker
+      sheetBackgroundColor="#FAFAFA"
+      sheetContentStyle={styles.sheetOuter}
+    >
       {/* Bottom section */}
-      <View style={className`h-[85%] bg-[#FAFAFA] flex-col rounded-t-[30px] p-1`}>
-        
-        <View style={className`flex flex-col gap-4 w-full bg-white h-full p-3`}>
-          {/* Top bar */}
-          <TouchableOpacity style={className`w-full flex items-center justify-center`}>
-            <Image source={indicator} style={className`w-[35px] h-1`} />
-          </TouchableOpacity>
-
+        <View style={styles.sheetInner}>
           {/* Header */}
           <View style={className`flex flex-row items-center justify-between`}>
             <View style={className`flex flex-row items-center gap-2 relative`}>
@@ -182,7 +182,8 @@ const DriverIndex = () => {
           {/* Ride List */}
           <ScrollView
             showsVerticalScrollIndicator={false}
-            style={className`flex flex-col gap-3 min-h-[200px]`}
+            style={className`flex-1`}
+            contentContainerStyle={className`gap-3 pb-3 px-1`}
           >
             <View style={className`mt-3`}>
               {loading ? (
@@ -243,11 +244,15 @@ const DriverIndex = () => {
                           <View
                             style={className`flex flex-row items-center gap-3 mt-3`}
                           >
+                            {/* Sized by its content: a fixed max-width here is
+                                narrower than "MMM D, YYYY h:mm A", which wrapped
+                                the meridiem onto its own line. */}
                             <View
-                              style={className`rounded-lg flex items-center justify-center max-w-[133px]
-                                h-[32px] w-full bg-[#F0F0F0] gap-1 rounded-[8px]`}
+                              style={className`rounded-lg flex items-center justify-center
+                                h-[32px] px-2 self-start bg-[#F0F0F0] rounded-[8px]`}
                             >
                               <Text
+                                numberOfLines={1}
                                 style={className`text-[12px] font-bold text-[#8C8C8C]`}
                               >
                                 {dayjs(rider.departureTime).format(
@@ -259,9 +264,10 @@ const DriverIndex = () => {
                             <View style={className`flex-1 h-[2px] bg-[#ECECEC]`} />
 
                             <Text
+                              numberOfLines={1}
                               style={className`text-[#008000] text-sm font-semibold`}
                             >
-                              ₦{rider.pricePerSeat}
+                              ₦{formatPrice(rider.pricePerSeat)}
                             </Text>
                           </View>
 
@@ -307,15 +313,24 @@ const DriverIndex = () => {
 
         </View>
 
-      </View>
-
-    </View>
+    </MapSheetScreen>
   );
 };
 
 export default DriverIndex;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  sheetOuter: {
+    padding: 4,
+  },
+  sheetInner: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    padding: 12,
+    gap: 16,
+  },
+});
 
 
 
